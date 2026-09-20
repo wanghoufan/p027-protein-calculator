@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { colors } from '../theme/colors';
 import { radius } from '../theme/radius';
@@ -10,6 +10,8 @@ import {
   PresetFoodOverride,
   ServingOption,
 } from '../types';
+import { PRESET_FOOD_MAP } from '../data/presetFoods';
+import { getServingOverrideState } from '../domain/serving';
 import type { CustomFoodDraft } from '../hooks/useProteinCalculator';
 
 export type EditorMode =
@@ -37,15 +39,35 @@ const CANONICAL_TYPE_OPTIONS: readonly { value: CanonicalType; label: string }[]
   { value: 'count', label: '计数' },
 ];
 
-interface ServingDraft extends ServingOption {}
+type ServingDraft = ServingOption;
 
 /**
  * 食物编辑器（US4/US5）：
  * - preset：只开放 proteinPerBase/baseAmount/servingOptions，canonical type/unit 固定；
  * - custom：完整 FoodDefinition 编辑 + 校验（名称非空、protein/base/serving >0）；
  * - preset 显示"默认值仅作估算"提示与"恢复默认"。
+ * 外壳组件负责会话 key：state 变化时以新 key 重挂载表单（免 effect 重置）。
  */
-export function FoodEditorModal({
+export function FoodEditorModal(props: FoodEditorModalProps) {
+  const [session, setSession] = useState(0);
+  const [lastState, setLastState] = useState(props.state);
+  if (props.state !== lastState) {
+    setLastState(props.state);
+    if (props.state) {
+      setSession((prev) => prev + 1);
+    }
+  }
+  if (!props.state) {
+    return null;
+  }
+  return <FoodEditorForm key={session} {...props} state={props.state} />;
+}
+
+interface FoodEditorFormProps extends Omit<FoodEditorModalProps, 'state'> {
+  state: EditorMode;
+}
+
+function FoodEditorForm({
   state,
   onClose,
   onSavePresetOverride,
@@ -54,48 +76,30 @@ export function FoodEditorModal({
   onSaveCustom,
   onUpdateCustom,
   onDeleteCustom,
-}: FoodEditorModalProps) {
-  // preset 字段
-  const [proteinPerBase, setProteinPerBase] = useState('');
-  const [baseAmount, setBaseAmount] = useState('');
-  const [servings, setServings] = useState<ServingDraft[]>([]);
-  // custom 字段
-  const [name, setName] = useState('');
-  const [canonicalType, setCanonicalType] = useState<CanonicalType>('mass');
-  const [countUnit, setCountUnit] = useState<string>('个');
+}: FoodEditorFormProps) {
+  // preset 字段（每次会话由 state 直接初始化，无需 effect 重置）
+  const isCreate = state.kind === 'custom-create';
+  const initialFood = isCreate ? null : state.food;
+  const [proteinPerBase, setProteinPerBase] = useState(
+    isCreate ? '' : String(initialFood!.proteinPerBase),
+  );
+  const [baseAmount, setBaseAmount] = useState(isCreate ? '' : String(initialFood!.baseAmount));
+  const [servings, setServings] = useState<ServingDraft[]>(
+    isCreate ? [] : initialFood!.servingOptions.map((option) => ({ ...option })),
+  );
+  const [name, setName] = useState(state.kind === 'custom-edit' ? state.food.name : '');
+  const [canonicalType, setCanonicalType] = useState<CanonicalType>(
+    state.kind === 'custom-edit' ? state.food.canonicalType : 'mass',
+  );
+  const [countUnit, setCountUnit] = useState<string>(
+    state.kind === 'custom-edit' && state.food.canonicalType === 'count'
+      ? String(state.food.canonicalUnit)
+      : '个',
+  );
   const [errors, setErrors] = useState<string[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const mode = state?.kind ?? null;
-
-  useEffect(() => {
-    if (!state) return;
-    setErrors([]);
-    setConfirmDelete(false);
-    if (state.kind === 'preset') {
-      setProteinPerBase(String(state.food.proteinPerBase));
-      setBaseAmount(String(state.food.baseAmount));
-      setServings(state.food.servingOptions.map((option) => ({ ...option })));
-    } else if (state.kind === 'custom-edit') {
-      setName(state.food.name);
-      setProteinPerBase(String(state.food.proteinPerBase));
-      setBaseAmount(String(state.food.baseAmount));
-      setCanonicalType(state.food.canonicalType);
-      setCountUnit(state.food.canonicalType === 'count' ? String(state.food.canonicalUnit) : '个');
-      setServings(state.food.servingOptions.map((option) => ({ ...option })));
-    } else {
-      setName('');
-      setProteinPerBase('');
-      setBaseAmount('');
-      setCanonicalType('mass');
-      setCountUnit('个');
-      setServings([]);
-    }
-  }, [state]);
-
-  if (!state) {
-    return null;
-  }
+  const mode = state.kind;
 
   const isPreset = mode === 'preset';
   const isCustomCreate = mode === 'custom-create';
@@ -121,6 +125,8 @@ export function FoodEditorModal({
         id: option.id,
         label: option.label.trim(),
         amountInCanonicalUnit: option.amountInCanonicalUnit,
+        // origin 保持不变（系统默认被编辑仍为 SYSTEM_DEFAULT）；新增行一律 USER_DEFINED。
+        origin: option.origin ?? 'USER_DEFINED',
       }));
 
   const handleSavePreset = () => {
@@ -153,7 +159,6 @@ export function FoodEditorModal({
     };
     const result =
       state.kind === 'custom-edit' ? onUpdateCustom(state.food.id, draft) : onSaveCustom(draft);
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (result.ok) {
       onClose();
     } else {
@@ -165,6 +170,15 @@ export function FoodEditorModal({
     setServings((prev) =>
       prev.map((option, i) => (i === index ? { ...option, ...patch } : option)),
     );
+  };
+
+  // system serving override 派生显示（SPEC §6）：与原始系统值比较，被编辑过标"已修改"。
+  const getSystemServingOverridden = (option: ServingDraft): boolean => {
+    if (option.origin !== 'SYSTEM_DEFAULT' || state.kind !== 'preset') {
+      return false;
+    }
+    const base = PRESET_FOOD_MAP.get(food!.id)?.servingOptions.find((s) => s.id === option.id);
+    return base ? getServingOverrideState(base, option).isOverridden : false;
   };
 
   return (
@@ -282,45 +296,74 @@ export function FoodEditorModal({
           {canonicalType !== 'count' || isPreset ? (
             <>
               <Text style={styles.fieldLabel}>常用份量（可选）</Text>
-              {servings.map((option, index) => (
-                <View key={option.id} style={styles.servingRow}>
-                  <TextInput
-                    style={[styles.input, styles.servingLabelInput]}
-                    value={option.label}
-                    onChangeText={(text) => updateServing(index, { label: text })}
-                    placeholder="名称，如 1块"
-                    placeholderTextColor={colors.textSecondary}
-                    accessibilityLabel={`份量名称${index + 1}`}
-                  />
-                  <TextInput
-                    style={[styles.input, styles.servingAmountInput]}
-                    value={String(option.amountInCanonicalUnit)}
-                    onChangeText={(text) => {
-                      const parsed = parseFloat(text.replace(',', '.'));
-                      updateServing(index, {
-                        amountInCanonicalUnit: Number.isFinite(parsed) ? parsed : 0,
-                      });
-                    }}
-                    keyboardType="decimal-pad"
-                    accessibilityLabel={`份量数量${index + 1}`}
-                  />
-                  <Text style={styles.servingUnit}>{unit}</Text>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`删除份量${index + 1}`}
-                    onPress={() => setServings((prev) => prev.filter((_, i) => i !== index))}
-                  >
-                    <Text style={styles.removeServing}>删除</Text>
-                  </Pressable>
-                </View>
-              ))}
+              {servings.map((option, index) => {
+                const overridden = getSystemServingOverridden(option);
+                return (
+                  <View key={option.id} style={styles.servingRow}>
+                    <View style={styles.servingOriginBadge}>
+                      <Text
+                        style={
+                          overridden
+                            ? styles.servingOriginOverridden
+                            : option.origin === 'SYSTEM_DEFAULT'
+                              ? styles.servingOriginSystem
+                              : styles.servingOriginUser
+                        }
+                      >
+                        {overridden
+                          ? '已修改'
+                          : option.origin === 'SYSTEM_DEFAULT'
+                            ? '系统'
+                            : '自定义'}
+                      </Text>
+                    </View>
+                    <TextInput
+                      style={[styles.input, styles.servingLabelInput]}
+                      value={option.label}
+                      onChangeText={(text) => updateServing(index, { label: text })}
+                      placeholder="名称，如 1块"
+                      placeholderTextColor={colors.textSecondary}
+                      accessibilityLabel={`份量名称${index + 1}`}
+                    />
+                    <TextInput
+                      style={[styles.input, styles.servingAmountInput]}
+                      value={String(option.amountInCanonicalUnit)}
+                      onChangeText={(text) => {
+                        const parsed = parseFloat(text.replace(',', '.'));
+                        updateServing(index, {
+                          amountInCanonicalUnit: Number.isFinite(parsed) ? parsed : 0,
+                        });
+                      }}
+                      keyboardType="decimal-pad"
+                      accessibilityLabel={`份量数量${index + 1}`}
+                    />
+                    <Text style={styles.servingUnit}>{unit}</Text>
+                    {option.origin === 'USER_DEFINED' ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`删除份量${index + 1}`}
+                        onPress={() => setServings((prev) => prev.filter((_, i) => i !== index))}
+                      >
+                        <Text style={styles.removeServing}>删除</Text>
+                      </Pressable>
+                    ) : (
+                      <Text style={styles.removeServingDisabled}>系统份量不可删</Text>
+                    )}
+                  </View>
+                );
+              })}
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="新增份量"
                 onPress={() =>
                   setServings((prev) => [
                     ...prev,
-                    { id: `serving-${Date.now()}`, label: '', amountInCanonicalUnit: 0 },
+                    {
+                      id: `serving-${Date.now()}`,
+                      label: '',
+                      amountInCanonicalUnit: 0,
+                      origin: 'USER_DEFINED' as const,
+                    },
                   ])
                 }
               >
@@ -518,6 +561,25 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginTop: spacing.xs,
   },
+  servingOriginBadge: {
+    minWidth: 30,
+    alignItems: 'center',
+  },
+  servingOriginSystem: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  servingOriginUser: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  servingOriginOverridden: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.danger,
+  },
   servingLabelInput: {
     flex: 2,
   },
@@ -534,6 +596,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     minHeight: 44,
     lineHeight: 44,
+  },
+  removeServingDisabled: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    paddingHorizontal: spacing.xs,
   },
   addServing: {
     marginTop: spacing.sm,

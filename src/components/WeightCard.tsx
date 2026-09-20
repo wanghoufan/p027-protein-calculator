@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Card } from './ui/Card';
 import { NumberStepper } from './ui/NumberStepper';
-import { WeightPresetSwitch } from './WeightPresetSwitch';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
@@ -13,7 +12,8 @@ interface WeightCardProps {
 }
 
 /**
- * 我的体重卡（US1）：快捷预设 + 大数字 -/输入/+（step 1kg）。
+ * 我的体重卡（V1.5.1 / FR-039）：大数字 -/输入/+（step 1kg）。
+ * 男女固定体重预设已删除（FR-039：不以固定体重教学示例作为一级表达）。
  * 体重空值/非数字/≤0 时不计算并就地提示（US1.8）。
  */
 export function WeightCard({ weightKg, onWeightChange }: WeightCardProps) {
@@ -22,9 +22,6 @@ export function WeightCard({ weightKg, onWeightChange }: WeightCardProps) {
   return (
     <Card>
       <Text style={typography.cardTitle}>我的体重</Text>
-      <View style={styles.presets}>
-        <WeightPresetSwitch weightKg={weightKg} onPick={(w) => onWeightChange(w)} />
-      </View>
       <View style={styles.stepperRow}>
         <View style={styles.stepper}>
           <NumberStepper
@@ -44,11 +41,8 @@ export function WeightCard({ weightKg, onWeightChange }: WeightCardProps) {
 }
 
 const styles = StyleSheet.create({
-  presets: {
-    marginTop: spacing.md,
-  },
   stepperRow: {
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
   },

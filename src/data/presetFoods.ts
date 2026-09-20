@@ -4,6 +4,7 @@ const serving = (id: string, label: string, amountInCanonicalUnit: number): Serv
   id,
   label,
   amountInCanonicalUnit,
+  origin: 'SYSTEM_DEFAULT',
 });
 
 function preset(

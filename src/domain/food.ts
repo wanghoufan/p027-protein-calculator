@@ -1,10 +1,4 @@
-import {
-  MAX_RECENT_FOODS,
-  PersistedStateV1,
-  PresetFoodOverride,
-  FoodDefinition,
-  SelectedFood,
-} from '../types';
+import { MAX_RECENT_FOODS, PresetFoodOverride, FoodDefinition, SelectedFood } from '../types';
 
 /**
  * preset + override 合并（FR-013）：
@@ -36,11 +30,11 @@ export function updateRecentFoodIds(ids: readonly string[], foodId: string): str
 
 /**
  * 删除 custom food 时同步清理 selectedFoods / recentFoodIds 引用（US5.8）。
+ * 泛型：兼容任意含这两字段的持久化状态版本（V1/V2）。
  */
-export function removeCustomFoodReferences(
-  state: PersistedStateV1,
-  foodId: string,
-): PersistedStateV1 {
+export function removeCustomFoodReferences<
+  T extends { selectedFoods: SelectedFood[]; recentFoodIds: string[] },
+>(state: T, foodId: string): T {
   return {
     ...state,
     selectedFoods: state.selectedFoods.filter((selected) => selected.foodId !== foodId),

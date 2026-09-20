@@ -12,7 +12,7 @@ afterEach(async () => {
 
 async function renderApp() {
   await render(<App />);
-  await screen.findAllByText('90');
+  await screen.findAllByText('60');
 }
 
 /**
@@ -52,7 +52,7 @@ describe('US7：Top30 排行榜 Flow', () => {
     await waitFor(() =>
       expect(screen.queryByText('按每100g可食部蛋白质含量排序')).not.toBeOnTheScreen(),
     );
-    expect(screen.getByText('我的食物')).toBeOnTheScreen();
+    expect(screen.getByText('今日记录')).toBeOnTheScreen();
     // 顶部返回箭头
     fireEvent.press(screen.getByLabelText('打开常见高蛋白食物榜 Top 30'));
     await waitFor(() => expect(screen.getByText('千张（百页）')).toBeOnTheScreen());

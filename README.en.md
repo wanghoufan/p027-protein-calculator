@@ -38,7 +38,7 @@ adb install -r android/app/build/outputs/apk/release/app-release.apk
 
 ## Data source
 
-Ranking data comes from the China CDC Institute of Nutrition and Health's *China Food Composition Table* lookup platform (verified 2026-09) and covers only the 30 common foods included in this app. The full source card ships inside the app and works offline.
+Ranking data comes from the China CDC Institute of Nutrition and Health's _China Food Composition Table_ lookup platform (verified 2026-09) and covers only the 30 common foods included in this app. The full source card ships inside the app and works offline.
 
 ## Limitations
 

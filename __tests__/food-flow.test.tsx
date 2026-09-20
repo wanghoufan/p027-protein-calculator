@@ -12,7 +12,8 @@ afterEach(async () => {
 
 async function renderApp() {
   await render(<App />);
-  await screen.findAllByText('90');
+  // 默认 60kg × 日常维持/high 1.0 = 60
+  await screen.findAllByText('60');
 }
 
 async function addProtein(foodName: string, times = 1) {
@@ -58,12 +59,12 @@ describe('US2：当前食物组合计算', () => {
     await expectContribution('牛奶', '1.5');
   });
 
-  it('直接输入：鸡胸 300g → 60g；总量与差值实时更新（还差 30）', async () => {
+  it('直接输入：鸡胸 150g → 30g；总量与差值实时更新（还差 30）', async () => {
     await renderApp();
     const input = screen.getByLabelText('鸡胸肉数量');
-    fireEvent.changeText(input, '300');
+    fireEvent.changeText(input, '150');
     fireEvent(input, 'blur');
-    await expectContribution('鸡胸肉', '60');
+    await expectContribution('鸡胸肉', '30');
     await waitFor(() => expect(screen.getByText(/还差 30/)).toBeOnTheScreen());
     expect(screen.getByText(/已摄入/)).toBeOnTheScreen();
   });
@@ -79,14 +80,14 @@ describe('US2：当前食物组合计算', () => {
     await expectContribution('鸡胸肉', '20');
   });
 
-  it('超出目标：鸡胸 450g 已达标，再加 50g 超出 10', async () => {
+  it('超出目标：鸡胸 450g（90g）超出 30，再加 50g 超出 40', async () => {
     await renderApp();
     const input = screen.getByLabelText('鸡胸肉数量');
     fireEvent.changeText(input, '450');
     fireEvent(input, 'blur');
-    await waitFor(() => expect(screen.getByText(/已达标/)).toBeOnTheScreen());
+    await waitFor(() => expect(screen.getByText(/超出 30/)).toBeOnTheScreen());
     await addProtein('鸡胸肉');
-    await waitFor(() => expect(screen.getByText(/超出 10/)).toBeOnTheScreen());
+    await waitFor(() => expect(screen.getByText(/超出 40/)).toBeOnTheScreen());
   });
 
   it('清空只归零数量，不删除行', async () => {

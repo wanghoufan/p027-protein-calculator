@@ -1,11 +1,22 @@
-import { Coefficient, FoodDefinition, ProteinBalance, SelectedFood } from '../types';
+import {
+  FoodDefinition,
+  ProteinBalance,
+  ProteinGoalLevel,
+  ProteinGoalMode,
+  SelectedFood,
+} from '../types';
+import { getGoalCoefficient } from './proteinGoal';
 
 /**
- * 每日目标蛋白质：weightKg × coefficient（Constitution Principle III）。
+ * 每日目标蛋白质：weightKg × getGoalCoefficient(mode, level)（V1.5.1 SPEC §3）。
  * 内部计算不提前 round。
  */
-export function calculateTargetProtein(weightKg: number, coefficient: Coefficient): number {
-  return weightKg * coefficient;
+export function calculateTargetProtein(
+  weightKg: number,
+  mode: ProteinGoalMode,
+  level: ProteinGoalLevel,
+): number {
+  return weightKg * getGoalCoefficient(mode, level);
 }
 
 /**

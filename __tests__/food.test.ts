@@ -61,7 +61,9 @@ describe('resolvePresetFood', () => {
   });
 
   it('servingOptions override 整体替换且归 foodOverrides 管理（V1.1 统一来源）', () => {
-    const servingOptions = [{ id: 'piece', label: '1块', amountInCanonicalUnit: 150 }];
+    const servingOptions = [
+      { id: 'piece', label: '1块', amountInCanonicalUnit: 150, origin: 'SYSTEM_DEFAULT' as const },
+    ];
     const merged = resolvePresetFood(chickenBreast, { servingOptions });
     expect(merged.servingOptions).toEqual(servingOptions);
   });

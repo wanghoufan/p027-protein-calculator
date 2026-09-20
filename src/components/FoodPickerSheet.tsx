@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Animated,
   Modal,
@@ -41,29 +41,32 @@ export function FoodPickerSheet({
   onRequestEditFood,
 }: FoodPickerSheetProps) {
   const [query, setQuery] = useState('');
-  const translateY = useRef(new Animated.Value(0)).current;
+  const translateY = useMemo(() => new Animated.Value(0), []);
 
   const selectedIds = useMemo(
     () => new Set(calculator.selectedFoods.map((selected) => selected.foodId)),
     [calculator.selectedFoods],
   );
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_event, gesture) => gesture.dy > 8 && gesture.vy > 0,
-      onPanResponderMove: (_event, gesture) => {
-        if (gesture.dy > 0) {
-          translateY.setValue(gesture.dy);
-        }
-      },
-      onPanResponderRelease: (_event, gesture) => {
-        if (gesture.dy > 80) {
-          onClose();
-        }
-        Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
-      },
-    }),
-  ).current;
+  // 与旧实现等价：闭包捕获当前 onClose；useMemo 依赖 onClose，回调身份变化时重建。
+  const panHandlers = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_event, gesture) => gesture.dy > 8 && gesture.vy > 0,
+        onPanResponderMove: (_event, gesture) => {
+          if (gesture.dy > 0) {
+            translateY.setValue(gesture.dy);
+          }
+        },
+        onPanResponderRelease: (_event, gesture) => {
+          if (gesture.dy > 80) {
+            onClose();
+          }
+          Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+        },
+      }).panHandlers,
+    [translateY, onClose],
+  );
 
   const toggleFood = (foodId: string) => {
     if (calculator.isFoodSelected(foodId)) {
@@ -119,7 +122,7 @@ export function FoodPickerSheet({
           accessibilityLabel="食物选择器"
           style={[styles.sheet, shadows.sheet, { transform: [{ translateY }] }]}
         >
-          <View {...panResponder.panHandlers}>
+          <View {...panHandlers}>
             <View style={styles.handleArea}>
               <View style={styles.handle} />
             </View>

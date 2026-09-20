@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { colors } from '../../theme/colors';
 import { radius } from '../../theme/radius';
@@ -34,16 +34,17 @@ export function NumberStepper({
   const [text, setText] = useState(() => formatValue(value, maxDecimals));
   const large = variant === 'large';
 
-  // 外部值变化（如切换模式、清空）时同步输入框。
-  useEffect(() => {
-    setText((prev) => {
-      const parsed = parseFloat(prev);
-      if (Number.isFinite(parsed) && roundTo(parsed, maxDecimals) === roundTo(value, maxDecimals)) {
-        return prev;
-      }
-      return formatValue(value, maxDecimals);
-    });
-  }, [value, maxDecimals]);
+  // 外部值变化（如切换模式、清空）时同步输入框：渲染期调整派生状态（React 推荐模式，免 effect）。
+  const [sync, setSync] = useState({ value, maxDecimals });
+  if (sync.value !== value || sync.maxDecimals !== maxDecimals) {
+    const parsed = parseFloat(text);
+    const matchesDisplay =
+      Number.isFinite(parsed) && roundTo(parsed, maxDecimals) === roundTo(value, maxDecimals);
+    setSync({ value, maxDecimals });
+    if (!matchesDisplay) {
+      setText(formatValue(value, maxDecimals));
+    }
+  }
 
   const commit = (raw: string) => {
     const parsed = parseFloat(raw.replace(',', '.'));

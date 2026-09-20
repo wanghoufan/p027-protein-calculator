@@ -72,7 +72,7 @@ describe('loadState（QA-V1-003）', () => {
   it('未知 schema 回退默认状态', async () => {
     await AsyncStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ ...buildValidState(), schemaVersion: 2 }),
+      JSON.stringify({ ...buildValidState(), schemaVersion: 999 }),
     );
 
     const state = await loadState();

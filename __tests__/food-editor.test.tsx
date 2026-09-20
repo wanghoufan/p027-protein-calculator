@@ -12,7 +12,7 @@ afterEach(async () => {
 
 async function renderApp() {
   await render(<App />);
-  await screen.findAllByText('90');
+  await screen.findAllByText('60');
 }
 
 function contribution(name: string) {

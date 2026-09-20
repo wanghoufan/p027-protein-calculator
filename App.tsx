@@ -5,8 +5,15 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useProteinCalculator } from './src/hooks/useProteinCalculator';
 import { WeightCard } from './src/components/WeightCard';
-import { CoefficientSelector } from './src/components/CoefficientSelector';
-import { TargetCard } from './src/components/TargetCard';
+import { ProteinGoalSummaryCard } from './src/components/ProteinGoalSummaryCard';
+import {
+  ProteinGoalModeSelector,
+  ProteinGoalLevelSelector,
+} from './src/components/ProteinGoalSelector';
+import { ProteinGoalPickerSheet } from './src/components/ProteinGoalPickerSheet';
+import { ProteinGoalDetailView } from './src/components/ProteinGoalDetailView';
+import { MigrationNoticeCard } from './src/components/MigrationNoticeCard';
+import { RecordDietSheet } from './src/components/RecordDietSheet';
 import { FoodRow } from './src/components/FoodRow';
 import { ProteinSummary } from './src/components/ProteinSummary';
 import { FoodPickerSheet } from './src/components/FoodPickerSheet';
@@ -17,10 +24,9 @@ import { ProteinRankingModal } from './src/components/ProteinRankingModal';
 import { Card } from './src/components/ui/Card';
 import { calculateProteinBalance } from './src/domain/protein';
 import { colors } from './src/theme/colors';
-import { radius } from './src/theme/radius';
 import { spacing } from './src/theme/spacing';
 import { typography } from './src/theme/typography';
-import { FoodDefinition, PresetFoodOverride } from './src/types';
+import { FoodDefinition, PresetFoodOverride, ProteinGoalMode } from './src/types';
 
 // US6/FR-022：native splash 作为启动过渡，hydrate 完成前保持 splash（T062/T063）。
 void preventAutoHideAsync().catch(() => undefined);
@@ -28,6 +34,9 @@ void preventAutoHideAsync().catch(() => undefined);
 function CalculatorHome() {
   const calculator = useProteinCalculator();
   const [pickerVisible, setPickerVisible] = useState(false);
+  const [goalPickerVisible, setGoalPickerVisible] = useState(false);
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [recordVisible, setRecordVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [rankingVisible, setRankingVisible] = useState(false);
   const [editorState, setEditorState] = useState<EditorMode | null>(null);
@@ -62,6 +71,10 @@ function CalculatorHome() {
     });
   };
 
+  const handleSelectMode = (mode: ProteinGoalMode) => {
+    calculator.setProteinGoal(mode, calculator.proteinGoal.level);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -69,7 +82,7 @@ function CalculatorHome() {
           <Image source={require('./assets/icon.png')} style={styles.logo} />
           <View style={styles.headerText}>
             <Text style={typography.headerTitle}>蛋白质计算器</Text>
-            <Text style={typography.tagline}>吃对蛋白质，更好的自己</Text>
+            <Text style={typography.tagline}>科学计算 · 合理摄入 · 更健康的你</Text>
           </View>
           <Pressable
             accessibilityRole="button"
@@ -85,35 +98,89 @@ function CalculatorHome() {
           <WeightCard weightKg={calculator.weightKg} onWeightChange={calculator.setWeightRaw} />
         </View>
 
+        {/* 蛋白质目标模块（T138 / 原型首页）：模式一级、系数二级；「如何选择？」进目标选择。 */}
         <View style={styles.section}>
           <Card>
-            <Text style={typography.cardTitle}>蛋白质目标 (g/kg)</Text>
-            <View style={styles.coefficients}>
-              <CoefficientSelector
-                coefficient={calculator.coefficient}
-                onChange={calculator.setCoefficient}
+            <View style={styles.goalHeader}>
+              <Text style={typography.cardTitle}>蛋白质目标 ⓘ</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="如何选择蛋白质目标"
+                onPress={() => setGoalPickerVisible(true)}
+              >
+                <Text style={styles.howToChoose}>如何选择？ ›</Text>
+              </Pressable>
+            </View>
+            <View style={styles.modeSelector}>
+              <ProteinGoalModeSelector
+                mode={calculator.proteinGoal.mode}
+                onSelectMode={handleSelectMode}
               />
             </View>
+            <View style={styles.modeSelector}>
+              <ProteinGoalLevelSelector
+                mode={calculator.proteinGoal.mode}
+                level={calculator.proteinGoal.level}
+                onSelectLevel={(level) =>
+                  calculator.setProteinGoal(calculator.proteinGoal.mode, level)
+                }
+              />
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="查看模式说明"
+              onPress={() => setDetailVisible(true)}
+            >
+              <Text style={styles.detailLink}>查看模式说明与数据来源</Text>
+            </Pressable>
           </Card>
         </View>
 
         <View style={styles.section}>
-          <TargetCard
+          <ProteinGoalSummaryCard
             weightKg={calculator.weightKg}
-            coefficient={calculator.coefficient}
+            proteinGoal={calculator.proteinGoal}
             targetProtein={calculator.targetProtein}
           />
         </View>
 
+        {/* 迁移提示（T143）：legacy 1.5→1.6，持续到用户确认或重新选择目标。 */}
+        <View style={styles.section}>
+          <MigrationNoticeCard
+            visible={calculator.goalModelNoticePending}
+            onAcknowledge={calculator.acknowledgeGoalModelNotice}
+            onOpenGoalPicker={() => setGoalPickerVisible(true)}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Card>
+            <ProteinSummary
+              total={calculator.totalProtein}
+              target={calculator.targetProtein}
+              balance={balance}
+            />
+          </Card>
+        </View>
+
         <View style={styles.foodHeader}>
-          <Text style={typography.cardTitle}>我的食物</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="清空数量"
-            onPress={calculator.clearAmounts}
-          >
-            <Text style={styles.clearText}>清空</Text>
-          </Pressable>
+          <Text style={typography.cardTitle}>今日记录</Text>
+          <View style={styles.foodHeaderActions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="清空数量"
+              onPress={calculator.clearAmounts}
+            >
+              <Text style={styles.clearText}>清空</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="打开记录饮食"
+              onPress={() => setRecordVisible(true)}
+            >
+              <Text style={styles.clearText}>记录饮食 ›</Text>
+            </Pressable>
+          </View>
         </View>
         <View style={styles.section}>
           <Card>
@@ -155,21 +222,33 @@ function CalculatorHome() {
           </Card>
         </View>
 
-        <View style={styles.section}>
-          <Card>
-            <ProteinSummary
-              total={calculator.totalProtein}
-              target={calculator.targetProtein}
-              balance={balance}
-            />
-          </Card>
-        </View>
-
-        {/* V1.4 Top30 入口卡：主计算汇总之后、品牌装饰之前，不重排首页（Constitution Principle VI）。 */}
+        {/* V1.4 Top30 入口卡：主计算汇总之后，不重排首页（Constitution Principle VI）。 */}
         <View style={styles.section}>
           <ProteinRankingEntryCard onPress={() => setRankingVisible(true)} />
         </View>
       </ScrollView>
+
+      <ProteinGoalPickerSheet
+        visible={goalPickerVisible}
+        onClose={() => setGoalPickerVisible(false)}
+        selection={calculator.proteinGoal}
+        onSelect={(mode, level) => {
+          calculator.setProteinGoal(mode, level);
+        }}
+      />
+
+      <ProteinGoalDetailView
+        visible={detailVisible}
+        mode={calculator.proteinGoal.mode}
+        onClose={() => setDetailVisible(false)}
+      />
+
+      <RecordDietSheet
+        visible={recordVisible}
+        onClose={() => setRecordVisible(false)}
+        calculator={calculator}
+        onChangeGoal={() => setGoalPickerVisible(true)}
+      />
 
       <FoodPickerSheet
         visible={pickerVisible}
@@ -241,9 +320,9 @@ const styles = StyleSheet.create({
     marginLeft: spacing.md,
   },
   gearButton: {
-    minHeight: 44,
-    minWidth: 44,
-    borderRadius: 22,
+    minHeight: 48,
+    minWidth: 48,
+    borderRadius: 24,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
@@ -255,8 +334,27 @@ const styles = StyleSheet.create({
   section: {
     marginTop: spacing.md,
   },
-  coefficients: {
-    marginTop: spacing.md,
+  goalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  howToChoose: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.primary,
+    minHeight: 48,
+    lineHeight: 48,
+  },
+  modeSelector: {
+    marginTop: spacing.sm,
+  },
+  detailLink: {
+    marginTop: spacing.sm,
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.primary,
+    minHeight: 32,
   },
   foodHeader: {
     marginTop: spacing.xl,
@@ -264,12 +362,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  foodHeaderActions: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+  },
   clearText: {
     fontSize: 14,
     fontWeight: '700',
     color: colors.primary,
-    minHeight: 44,
-    lineHeight: 44,
+    minHeight: 48,
+    lineHeight: 48,
   },
   foodList: {
     marginTop: spacing.xs,
@@ -277,7 +379,7 @@ const styles = StyleSheet.create({
   addButton: {
     marginTop: spacing.md,
     minHeight: 50,
-    borderRadius: radius.control + 4,
+    borderRadius: 16,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',

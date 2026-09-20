@@ -94,29 +94,35 @@ export function FoodRow({
         </View>
       ) : null}
       <View style={styles.controlRow}>
-        {hasServings ? (
-          <View style={styles.modeSwitch}>
-            <SegmentedControl
-              options={[
-                {
-                  value: 'canonical' as const,
-                  label: food.canonicalUnit,
-                  accessibilityLabel: `${food.name}切克数`,
-                },
-                {
-                  value: 'serving' as const,
-                  label: '份',
-                  accessibilityLabel: `${food.name}切份量`,
-                },
-              ]}
-              value={selected.inputMode}
-              onChange={onInputModeChange}
-              accessibilityLabel={`${food.name}输入模式`}
-            />
-          </View>
-        ) : (
-          <Text style={styles.unitLabel}>{food.canonicalUnit}</Text>
-        )}
+        <View style={styles.modeSwitch}>
+          <SegmentedControl
+            options={
+              hasServings
+                ? [
+                    {
+                      value: 'canonical' as const,
+                      label: food.canonicalUnit,
+                      accessibilityLabel: `${food.name}切克数`,
+                    },
+                    {
+                      value: 'serving' as const,
+                      label: '份',
+                      accessibilityLabel: `${food.name}切份量`,
+                    },
+                  ]
+                : [
+                    {
+                      value: 'canonical' as const,
+                      label: food.canonicalUnit,
+                      accessibilityLabel: `${food.name}单位`,
+                    },
+                  ]
+            }
+            value={selected.inputMode}
+            onChange={onInputModeChange}
+            accessibilityLabel={`${food.name}输入模式`}
+          />
+        </View>
         <View style={styles.stepper}>
           <NumberStepper
             value={displayValue}
@@ -202,11 +208,6 @@ const styles = StyleSheet.create({
   },
   modeSwitch: {
     width: 104,
-  },
-  unitLabel: {
-    width: 104,
-    fontSize: 13,
-    color: colors.textSecondary,
   },
   stepper: {
     flex: 1,

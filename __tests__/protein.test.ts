@@ -20,13 +20,17 @@ const selected = (foodId: string, amount: number): SelectedFood => ({
   inputMode: 'canonical',
 });
 
-describe('calculateTargetProtein（FR-001/002）', () => {
-  it('60kg × 1.5 = 90g', () => {
-    expect(calculateTargetProtein(60, 1.5)).toBe(90);
+describe('calculateTargetProtein（V1.5.1 FR-038：mode+level 派生）', () => {
+  it('60kg × daily/high(1.0) = 60g', () => {
+    expect(calculateTargetProtein(60, 'daily_maintenance', 'high')).toBe(60);
   });
 
-  it('60kg × 1.0 = 60g', () => {
-    expect(calculateTargetProtein(60, 1.0)).toBe(60);
+  it('60kg × fitness/high(1.6) = 96g（legacy 1.5 → 1.6 行为变化）', () => {
+    expect(calculateTargetProtein(60, 'fitness_maintenance', 'high')).toBe(96);
+  });
+
+  it('68kg × muscle_gain/low(1.6) = 108.8g', () => {
+    expect(calculateTargetProtein(68, 'muscle_gain', 'low')).toBeCloseTo(108.8, 10);
   });
 });
 
@@ -103,7 +107,9 @@ describe('canonical/serving 变换（FR-007/008）', () => {
 
   it('1块改 150g 后：1块=30g，2块=60g 蛋白质', () => {
     const overridden = resolvePresetFood(chickenBreast, {
-      servingOptions: [{ id: 'piece', label: '1块', amountInCanonicalUnit: 150 }],
+      servingOptions: [
+        { id: 'piece', label: '1块', amountInCanonicalUnit: 150, origin: 'SYSTEM_DEFAULT' },
+      ],
     });
     const one = setAmountFromServingInput(
       selected('chicken-breast', 0),
