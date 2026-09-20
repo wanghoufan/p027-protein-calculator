@@ -1,0 +1,61 @@
+# Protein Calculator
+
+> No sign-up, no network. Figure out your daily protein target in seconds, then see how much protein your meal gives you.
+
+[中文](./README.md)
+
+![Home](docs/screenshots/home.png) ![High-protein ranking](docs/screenshots/ranking.png)
+
+## What is this
+
+Protein Calculator is an offline Android app (Expo + React Native). It answers one concrete question for people who work out or watch their diet: "roughly how much protein do I need a day, and how much protein is in a few pieces of chicken breast, eggs, or a bottle of milk?"
+
+## What you can do
+
+- **Daily target**: enter your weight, pick 1.0 or 1.5 g/kg, and get your daily grams instantly (60 kg × 1.5 = 90 g/day).
+- **This meal's total**: adjust food amounts (by g / ml / piece, or handy servings like 块/瓶) and watch total intake, remaining amount, and progress update live.
+- **Top 30 high-protein ranking**: 30 common foods ranked by protein per 100 g; tap `+` to add foods straight into the calculator without leaving the list.
+- **Make values yours**: override preset nutrition values and servings to match package labels, add fully custom foods, restore defaults anytime.
+- **Pick up where you left off**: weight, coefficient, amounts, and custom foods persist on-device and survive process kills; corrupted storage falls back to defaults instead of crashing.
+
+## Quick start
+
+Requirements: Node.js 22.13+, an Android phone/emulator (Expo Go works for preview).
+
+```bash
+# run inside protein-calculator/
+npm install
+npx expo start
+```
+
+Scan the QR code with Expo Go, or press `a` for the emulator. Full installable build:
+
+```bash
+npx expo prebuild --platform android
+./android/gradlew -p android :app:assembleRelease
+adb install -r android/app/build/outputs/apk/release/app-release.apk
+```
+
+## Data source
+
+Ranking data comes from the China CDC Institute of Nutrition and Health's *China Food Composition Table* lookup platform (verified 2026-09) and covers only the 30 common foods included in this app. The full source card ships inside the app and works offline.
+
+## Limitations
+
+- Android only (package `com.proteincalculator.app`); no verified iOS build.
+- Fully offline: no accounts, no sync, no network features; data does not migrate between phones.
+- Nutrition values are estimates — package labels win; no calories/fat/carbs, no medical advice.
+
+## Development
+
+```bash
+npm run typecheck   # tsc --noEmit
+npm run lint        # expo lint
+npm test            # jest (non-watch)
+npm run format:check
+npx expo-doctor
+```
+
+## License
+
+This repo ships with a `LICENSE` file (Expo scaffold default text).
