@@ -4,13 +4,33 @@
 
 明确当前项目中设备操作、证据采集、QA 判定和监督复核的边界，避免把编排者窗口的设备能力误认为 QA 子代理能力。
 
+## 当前模型与 Runtime
+
+以下为本次分支测试使用的当前配置快照；模型母版仍以项目上级目录的 `USER_MODEL_OVERRIDE.md` 为准。
+
+| 角色          | 当前模型                                   | Runtime                     | 本协议中的职责             |
+| ------------- | ------------------------------------------ | --------------------------- | -------------------------- |
+| task-manager  | 开窗口时定                                 | 本窗口 CUA/Bash             | 唯一真机操作和证据采集者   |
+| builder       | `codebuddy/deepseek-v4.1-flash`            | codebuddy                   | 开发、构建、静态证据       |
+| qa            | `codex/gpt-5.6-luna`                       | codex；真机采集由本窗口执行 | 测试、日志、截图和视觉复核 |
+| supervisor    | `opencode-go/muse-spark-1.3-contributor`   | opencode                    | 证据链和状态监督           |
+| code-reviewer | `opencode/muse-spark-1.3-contributor-free` | 本窗口                      | 代码复核                   |
+
+## 模型能力探针记录
+
+验证日期：2026-09-20。
+
+- `codex/gpt-5.6-luna`：`VISION_PROBE=PASS`。成功读取原型图和真实截图，识别主色为绿色，并判断实际截图没有默认 Expo 图标。
+- `codebuddy/deepseek-v4.1-flash`：真实截图可读取，但 CodeBuddy Read Runtime 无法读取上级 `docs/design` 原型图；双图探针为 `FAIL / NOT_VERIFIED`。这记录为 Runtime 路径权限缺口，不把模型能力误判为通过。
+- 结论：Luna 当前可用于双图视觉复核；DeepSeek 当前只能确认单图读取，不能在本 Runtime 下承担双图视觉复核。
+
 ## 角色分工
 
-| 环节 | 执行者 | 输出 |
-|---|---|---|
-| `DEVICE_CAPTURE` | task-manager 当前窗口 | 设备操作结果、截图、日志、构建信息 |
-| `QA_REVIEW` | QA 模型 | 功能、回归和视觉复核结论 |
-| `SUPERVISOR_CHECK` | supervisor | 证据链和状态一致性结论 |
+| 环节               | 执行者                | 输出                               |
+| ------------------ | --------------------- | ---------------------------------- |
+| `DEVICE_CAPTURE`   | task-manager 当前窗口 | 设备操作结果、截图、日志、构建信息 |
+| `QA_REVIEW`        | QA 模型               | 功能、回归和视觉复核结论           |
+| `SUPERVISOR_CHECK` | supervisor            | 证据链和状态一致性结论             |
 
 ## DEVICE_CAPTURE
 
