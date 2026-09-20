@@ -1,0 +1,390 @@
+import React, { useMemo, useRef, useState } from 'react';
+import {
+  Animated,
+  Modal,
+  PanResponder,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { RecentFoodStrip } from './RecentFoodStrip';
+import { FoodCategorySection } from './FoodCategorySection';
+import { FoodIcon } from './ui/FoodIcon';
+import { colors } from '../theme/colors';
+import { radius } from '../theme/radius';
+import { shadows } from '../theme/shadows';
+import { spacing } from '../theme/spacing';
+import { FoodDefinition, PRESET_CATEGORIES } from '../types';
+import type { Calculator } from '../hooks/useProteinCalculator';
+
+interface FoodPickerSheetProps {
+  visible: boolean;
+  onClose: () => void;
+  calculator: Calculator;
+  onRequestCreateCustom: () => void;
+  onRequestEditFood: (food: FoodDefinition) => void;
+}
+
+/**
+ * 本地 Bottom Sheet 食物选择器（US3 / FR-010/011/012）：
+ * 搜索（trim 包含匹配）、常用区、分类折叠、我的食物、+ 自定义食物。
+ * 添加成功后 sheet 保持打开可继续添加（US3.10）。
+ */
+export function FoodPickerSheet({
+  visible,
+  onClose,
+  calculator,
+  onRequestCreateCustom,
+  onRequestEditFood,
+}: FoodPickerSheetProps) {
+  const [query, setQuery] = useState('');
+  const translateY = useRef(new Animated.Value(0)).current;
+
+  const selectedIds = useMemo(
+    () => new Set(calculator.selectedFoods.map((selected) => selected.foodId)),
+    [calculator.selectedFoods],
+  );
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_event, gesture) => gesture.dy > 8 && gesture.vy > 0,
+      onPanResponderMove: (_event, gesture) => {
+        if (gesture.dy > 0) {
+          translateY.setValue(gesture.dy);
+        }
+      },
+      onPanResponderRelease: (_event, gesture) => {
+        if (gesture.dy > 80) {
+          onClose();
+        }
+        Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+      },
+    }),
+  ).current;
+
+  const toggleFood = (foodId: string) => {
+    if (calculator.isFoodSelected(foodId)) {
+      calculator.removeFood(foodId);
+    } else {
+      calculator.addFood(foodId);
+    }
+  };
+
+  const recentFoods = calculator.recentFoodIds
+    .map((id) => calculator.getFoodById(id))
+    .filter((food): food is FoodDefinition => Boolean(food));
+
+  const trimmed = query.trim();
+  const searchResults = useMemo(() => {
+    if (trimmed.length === 0) {
+      return [];
+    }
+    return calculator.effectiveFoods.filter((food) => food.name.includes(trimmed));
+  }, [trimmed, calculator.effectiveFoods]);
+
+  const renderFoodRow = (food: FoodDefinition) => {
+    const selected = selectedIds.has(food.id);
+    return (
+      <View key={food.id} style={styles.foodRow}>
+        <FoodIcon foodId={food.id} foodName={food.name} size={36} />
+        <View style={styles.foodNameCol}>
+          <Text style={styles.foodName}>{food.name}</Text>
+          <Text style={styles.foodBase}>
+            {food.proteinPerBase}g / {food.baseAmount}
+            {food.canonicalUnit}
+          </Text>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${selected ? '移除' : '添加'} ${food.name}`}
+          style={[styles.action, selected && styles.actionSelected]}
+          onPress={() => toggleFood(food.id)}
+        >
+          <Text style={[styles.actionText, selected && styles.actionTextSelected]}>
+            {selected ? '✓' : '+'}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        <Pressable style={styles.backdrop} accessibilityLabel="关闭选择器遮罩" onPress={onClose} />
+        <Animated.View
+          accessibilityLabel="食物选择器"
+          style={[styles.sheet, shadows.sheet, { transform: [{ translateY }] }]}
+        >
+          <View {...panResponder.panHandlers}>
+            <View style={styles.handleArea}>
+              <View style={styles.handle} />
+            </View>
+            <View style={styles.headerRow}>
+              <Text style={styles.title}>添加食物</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="关闭选择器"
+                hitSlop={12}
+                onPress={onClose}
+              >
+                <Text style={styles.close}>✕</Text>
+              </Pressable>
+            </View>
+          </View>
+          <View style={styles.searchWrap}>
+            <Text style={styles.searchIcon}>⌕</Text>
+            <TextInput
+              style={styles.search}
+              placeholder="搜索食物"
+              placeholderTextColor={colors.textSecondary}
+              value={query}
+              onChangeText={setQuery}
+              accessibilityLabel="搜索食物"
+              keyboardType="default"
+              returnKeyType="search"
+            />
+          </View>
+          <ScrollView
+            style={styles.scroll}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.scrollContent}
+          >
+            {trimmed.length > 0 ? (
+              searchResults.length > 0 ? (
+                searchResults.map(renderFoodRow)
+              ) : (
+                <Text style={styles.empty}>没有找到匹配的食物</Text>
+              )
+            ) : (
+              <>
+                <Text style={styles.sectionTitle}>常用食物</Text>
+                <RecentFoodStrip
+                  foods={recentFoods}
+                  selectedIds={selectedIds}
+                  onToggle={toggleFood}
+                />
+                {PRESET_CATEGORIES.map((category) => (
+                  <FoodCategorySection
+                    key={category.id}
+                    title={category.label}
+                    foods={calculator.effectiveFoods.filter(
+                      (food) => food.source === 'preset' && food.category === category.id,
+                    )}
+                    selectedIds={selectedIds}
+                    onToggle={toggleFood}
+                  />
+                ))}
+                <View style={[styles.section, styles.customSection]}>
+                  <Text style={styles.sectionTitle}>我的食物</Text>
+                  {calculator.customFoods.length === 0 ? (
+                    <Text style={styles.customEmpty}>还没有自定义食物</Text>
+                  ) : (
+                    calculator.customFoods.map(renderFoodRow)
+                  )}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="新建自定义食物"
+                    style={styles.createCustom}
+                    onPress={onRequestCreateCustom}
+                  >
+                    <View style={styles.createCustomPlus}>
+                      <Text style={styles.createCustomPlusText}>＋</Text>
+                    </View>
+                    <View style={styles.createCustomTextCol}>
+                      <Text style={styles.createCustomText}>自定义食物</Text>
+                      <Text style={styles.createCustomHint}>添加你常吃的食物</Text>
+                    </View>
+                  </Pressable>
+                </View>
+              </>
+            )}
+          </ScrollView>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'flex-end',
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  sheet: {
+    maxHeight: '80%',
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: radius.sheet,
+    borderTopRightRadius: radius.sheet,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+  handleArea: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  handle: {
+    width: 44,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: colors.border,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  close: {
+    fontSize: 20,
+    color: colors.textSecondary,
+    minHeight: 44,
+    minWidth: 44,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    lineHeight: 44,
+  },
+  searchWrap: {
+    marginTop: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 46,
+    borderRadius: radius.input,
+    backgroundColor: colors.controlBg,
+    paddingHorizontal: spacing.md,
+  },
+  searchIcon: {
+    fontSize: 18,
+    color: colors.textSecondary,
+    marginRight: spacing.sm,
+  },
+  search: {
+    flex: 1,
+    minHeight: 46,
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  scroll: {
+    marginTop: spacing.sm,
+  },
+  scrollContent: {
+    paddingBottom: spacing.lg,
+  },
+  sectionTitle: {
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  foodRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    minHeight: 56,
+  },
+  foodNameCol: {
+    flex: 1,
+  },
+  foodName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  foodBase: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 1,
+  },
+  action: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionSelected: {
+    backgroundColor: colors.primarySoft,
+  },
+  actionText: {
+    fontSize: 18,
+    lineHeight: 20,
+    fontWeight: '700',
+    color: colors.surface,
+  },
+  actionTextSelected: {
+    color: colors.primary,
+  },
+  empty: {
+    marginTop: spacing.xl,
+    textAlign: 'center',
+    color: colors.textSecondary,
+    fontSize: 14,
+  },
+  section: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  customSection: {
+    marginTop: spacing.lg,
+    borderBottomWidth: 0,
+  },
+  customEmpty: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
+  createCustom: {
+    marginTop: spacing.md,
+    minHeight: 64,
+    borderRadius: radius.control,
+    backgroundColor: colors.primarySoft,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    gap: spacing.md,
+  },
+  createCustomPlus: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  createCustomPlusText: {
+    fontSize: 18,
+    lineHeight: 20,
+    fontWeight: '700',
+    color: colors.surface,
+  },
+  createCustomTextCol: {
+    flex: 1,
+  },
+  createCustomText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  createCustomHint: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 1,
+  },
+});
