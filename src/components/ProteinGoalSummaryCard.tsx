@@ -6,9 +6,9 @@ import { shadows } from '../theme/shadows';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 import { ProteinGoalSelection } from '../types';
-import { PROTEIN_GOAL_MODE_COPY } from '../data/proteinGoalModes';
 import { formatCoefficient, getGoalCoefficient } from '../domain/proteinGoal';
 import { formatProtein } from '../domain/protein';
+import { useT } from '../i18n/I18nContext';
 
 interface ProteinGoalSummaryCardProps {
   weightKg: number | null;
@@ -25,13 +25,19 @@ export function ProteinGoalSummaryCard({
   proteinGoal,
   targetProtein,
 }: ProteinGoalSummaryCardProps) {
+  const { t, locale } = useT();
   const valid = targetProtein !== null && weightKg !== null;
-  const copy = PROTEIN_GOAL_MODE_COPY[proteinGoal.mode];
+  const copy = t.goalModes[proteinGoal.mode];
   const coefficient = getGoalCoefficient(proteinGoal.mode, proteinGoal.level);
-  const levelLabel = proteinGoal.level === 'low' ? '低' : '高';
+  const levelLabel = proteinGoal.level === 'low' ? t.levelLow : t.levelHigh;
+  const note = valid
+    ? locale === 'en'
+      ? `${copy.name} · ${levelLabel} ${formatCoefficient(coefficient)}× (${weightKg} kg)`
+      : `${copy.name} · ${levelLabel} ${formatCoefficient(coefficient)}×（${weightKg} kg）`
+    : t.todayTargetPlaceholder;
   return (
     <View style={[styles.card, shadows.card]} accessibilityLiveRegion="polite">
-      <Text style={styles.caption}>今日目标</Text>
+      <Text style={styles.caption}>{t.todayTarget}</Text>
       <View style={styles.numberRow}>
         {valid ? (
           <>
@@ -42,11 +48,7 @@ export function ProteinGoalSummaryCard({
           <Text style={styles.placeholder}>—</Text>
         )}
       </View>
-      <Text style={styles.note}>
-        {valid
-          ? `${copy.name} · ${levelLabel} ${formatCoefficient(coefficient)}×（${weightKg} kg）`
-          : '输入有效体重后自动计算今日目标'}
-      </Text>
+      <Text style={styles.note}>{note}</Text>
     </View>
   );
 }

@@ -4,6 +4,7 @@ import { FoodIcon } from './ui/FoodIcon';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { FoodDefinition } from '../types';
+import { fmt, foodName, unitLabel, useT } from '../i18n/I18nContext';
 
 interface FoodCategorySectionProps {
   title: string;
@@ -20,6 +21,7 @@ export function FoodCategorySection({
   onToggle,
 }: FoodCategorySectionProps) {
   const [expanded, setExpanded] = useState(false);
+  const { t, locale } = useT();
   const headerFood = foods[0];
   return (
     <View style={styles.section}>
@@ -30,28 +32,32 @@ export function FoodCategorySection({
         onPress={() => setExpanded((value) => !value)}
       >
         {headerFood ? (
-          <FoodIcon foodId={headerFood.id} foodName={headerFood.name} size={28} />
+          <FoodIcon foodId={headerFood.id} foodName={foodName(headerFood, t, locale)} size={28} />
         ) : null}
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.count}>{foods.length} 种</Text>
+        <Text style={styles.count}>{fmt(t.categoryCount, { n: foods.length })}</Text>
         <Text style={styles.chevron}>{expanded ? '▾' : '▸'}</Text>
       </Pressable>
       {expanded
         ? foods.map((food) => {
             const selected = selectedIds.has(food.id);
+            const displayName = foodName(food, t, locale);
             return (
               <View key={food.id} style={styles.row}>
-                <FoodIcon foodId={food.id} foodName={food.name} size={36} />
+                <FoodIcon foodId={food.id} foodName={displayName} size={36} />
                 <View style={styles.nameCol}>
-                  <Text style={styles.name}>{food.name}</Text>
+                  <Text style={styles.name}>{displayName}</Text>
                   <Text style={styles.base}>
                     {food.proteinPerBase}g / {food.baseAmount}
-                    {food.canonicalUnit}
+                    {unitLabel(food.canonicalUnit, t)}
                   </Text>
                 </View>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`${selected ? '移除' : '添加'} ${food.name}`}
+                  accessibilityLabel={fmt(t.actionA11y, {
+                    action: selected ? t.wordRemove : t.wordAdd,
+                    name: displayName,
+                  })}
                   style={[styles.action, selected && styles.actionSelected]}
                   onPress={() => onToggle(food.id)}
                 >

@@ -5,6 +5,7 @@ import { FoodDefinition, MAX_RECENT_FOODS } from '../types';
 import { colors } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
+import { fmt, foodName, useT } from '../i18n/I18nContext';
 
 interface RecentFoodStripProps {
   foods: readonly FoodDefinition[];
@@ -17,26 +18,31 @@ interface RecentFoodStripProps {
  * 视觉向原型靠拢：四宫格缩略图卡 + 右下角 + 徽标。
  */
 export function RecentFoodStrip({ foods, selectedIds, onToggle }: RecentFoodStripProps) {
+  const { t, locale } = useT();
   if (foods.length === 0) {
     return null;
   }
   return (
-    <View style={styles.grid} accessibilityLabel="常用食物区">
+    <View style={styles.grid} accessibilityLabel={t.recentStripA11y}>
       {foods.slice(0, MAX_RECENT_FOODS).map((food) => {
         const selected = selectedIds.has(food.id);
+        const displayName = foodName(food, t, locale);
         return (
           <Pressable
             key={food.id}
             accessibilityRole="button"
-            accessibilityLabel={`${selected ? '移除' : '添加'} 常用 ${food.name}`}
+            accessibilityLabel={fmt(t.recentActionA11y, {
+              action: selected ? t.wordRemove : t.wordAdd,
+              name: displayName,
+            })}
             style={[styles.cell, selected && styles.cellSelected]}
             onPress={() => onToggle(food.id)}
           >
-            <FoodIcon foodId={food.id} foodName={food.name} size={44} />
+            <FoodIcon foodId={food.id} foodName={displayName} size={44} />
             <Text style={styles.cellText} numberOfLines={1}>
               {/* 透明状态前缀：+ / ✓ 状态由右上角徽标表达，同时避免与分类行食物名精确撞名 */}
               <Text style={styles.cellStatePrefix}>{selected ? '✓ ' : '+ '}</Text>
-              {food.name}
+              {displayName}
             </Text>
             <View style={[styles.badge, selected && styles.badgeSelected]}>
               <Text style={styles.badgeText}>{selected ? '✓' : '+'}</Text>

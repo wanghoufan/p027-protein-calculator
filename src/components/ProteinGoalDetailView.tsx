@@ -5,11 +5,7 @@ import { colors } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
 import { ProteinGoalMode } from '../types';
-import {
-  HEALTH_BOUNDARY_LINES,
-  HIGH_LEVEL_REMINDER,
-  PROTEIN_GOAL_MODE_COPY,
-} from '../data/proteinGoalModes';
+import { useT } from '../i18n/I18nContext';
 import { getGoalCoefficient } from '../domain/proteinGoal';
 
 interface ProteinGoalDetailViewProps {
@@ -25,10 +21,11 @@ interface ProteinGoalDetailViewProps {
  */
 export function ProteinGoalDetailView({ visible, mode, onClose }: ProteinGoalDetailViewProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useT();
   if (!mode) {
     return null;
   }
-  const copy = PROTEIN_GOAL_MODE_COPY[mode];
+  const copy = t.goalModes[mode];
   const range = {
     low: getGoalCoefficient(mode, 'low'),
     high: getGoalCoefficient(mode, 'high'),
@@ -38,21 +35,21 @@ export function ProteinGoalDetailView({ visible, mode, onClose }: ProteinGoalDet
       <View style={styles.overlay}>
         <Pressable
           style={styles.backdrop}
-          accessibilityLabel="关闭模式说明遮罩"
+          accessibilityLabel={t.detailOverlayA11y}
           onPress={onClose}
         />
         <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}>
           <View style={[styles.headerRow, { paddingTop: insets.top + spacing.md }]}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="返回"
+              accessibilityLabel={t.backA11y}
               hitSlop={12}
               style={styles.backButton}
               onPress={onClose}
             >
               <Text style={styles.backText}>‹</Text>
             </Pressable>
-            <Text style={styles.title}>蛋白质目标说明</Text>
+            <Text style={styles.title}>{t.goalDetailTitle}</Text>
             <View style={styles.headerSpacer} />
           </View>
 
@@ -68,19 +65,19 @@ export function ProteinGoalDetailView({ visible, mode, onClose }: ProteinGoalDet
 
             <View style={styles.levelRow}>
               <View style={styles.levelCard}>
-                <Text style={styles.levelLabel}>低档</Text>
-                <Text style={styles.levelValue}>{range.low} g/kg/天</Text>
+                <Text style={styles.levelLabel}>{t.lowTier}</Text>
+                <Text style={styles.levelValue}>{range.low} {t.perDayUnit}</Text>
               </View>
               <View style={[styles.levelCard, styles.levelCardHigh]}>
-                <Text style={styles.levelLabel}>高档</Text>
-                <Text style={[styles.levelValue, styles.levelValueHigh]}>{range.high} g/kg/天</Text>
+                <Text style={styles.levelLabel}>{t.highTier}</Text>
+                <Text style={[styles.levelValue, styles.levelValueHigh]}>{range.high} {t.perDayUnit}</Text>
               </View>
             </View>
 
             <View style={styles.sectionRow}>
               <Text style={styles.sectionIcon}>⚙</Text>
               <View style={styles.sectionBody}>
-                <Text style={styles.sectionTitle}>适用场景</Text>
+                <Text style={styles.sectionTitle}>{t.scenarioTitle}</Text>
                 <Text style={styles.sectionText}>{copy.scenario}</Text>
               </View>
             </View>
@@ -88,7 +85,7 @@ export function ProteinGoalDetailView({ visible, mode, onClose }: ProteinGoalDet
             <View style={styles.sectionRow}>
               <Text style={styles.sectionIcon}>☀</Text>
               <View style={styles.sectionBody}>
-                <Text style={styles.sectionTitle}>为什么是这个范围</Text>
+                <Text style={styles.sectionTitle}>{t.rationaleTitle}</Text>
                 <Text style={styles.sectionText}>{copy.rationale}</Text>
               </View>
             </View>
@@ -96,7 +93,7 @@ export function ProteinGoalDetailView({ visible, mode, onClose }: ProteinGoalDet
             <View style={styles.sectionRow}>
               <Text style={styles.sectionIcon}>▤</Text>
               <View style={styles.sectionBody}>
-                <Text style={styles.sectionTitle}>数据来源</Text>
+                <Text style={styles.sectionTitle}>{t.sourcesTitle}</Text>
                 {copy.sources.map((source) => (
                   <Text key={source} style={styles.sourceItem}>
                     · {source}
@@ -106,11 +103,11 @@ export function ProteinGoalDetailView({ visible, mode, onClose }: ProteinGoalDet
             </View>
 
             <View style={styles.reminderBox}>
-              <Text style={styles.reminderText}>ⓘ {HIGH_LEVEL_REMINDER}</Text>
+              <Text style={styles.reminderText}>ⓘ {t.highLevelReminder}</Text>
             </View>
 
             <View style={styles.boundaryBox}>
-              {HEALTH_BOUNDARY_LINES.map((line) => (
+              {t.healthBoundaryLines.map((line) => (
                 <Text key={line} style={styles.boundaryText}>
                   {line}
                 </Text>

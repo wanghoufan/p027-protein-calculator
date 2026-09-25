@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
+import { useT } from '../i18n/I18nContext';
 
 /**
  * 榜单底部说明区（T095/FR-034/SPEC Acceptance 19-23）：
@@ -10,22 +11,23 @@ import { spacing } from '../theme/spacing';
  * 完全离线展示：100g 口径提示、来源、核验日期、范围声明、差异说明。
  */
 export function RankingSourceInfo() {
+  const { t } = useT();
   return (
     <View style={styles.wrap}>
       <View style={styles.eggTip}>
         <Text style={styles.eggTipIcon}>💡</Text>
-        <Text style={styles.eggTipText}>排行统一按100g比较；计算器输入单位可能不同。</Text>
+        <Text style={styles.eggTipText}>{t.rankingTip}</Text>
       </View>
       <View style={styles.sourceCard}>
-        <Text style={styles.sourceTitle}>数据来源与说明</Text>
+        <Text style={styles.sourceTitle}>{t.sourceTitle}</Text>
         <Text style={styles.sourceBody}>
-          数据来源：中国疾病预防控制中心营养与健康所《中国食物成分表》查询平台。
+          {t.sourceBody}
         </Text>
-        <Text style={styles.sourceBody}>核验：2026-09</Text>
+        <Text style={styles.sourceBody}>{t.sourceChecked}</Text>
         <Text style={styles.sourceBody}>
-          仅比较本应用收录的30种常见食物，不代表《中国食物成分表》全库绝对Top 30。
+          {t.sourceScope}
         </Text>
-        <Text style={styles.sourceBody}>不同品种、部位、加工方式和品牌会有差异。</Text>
+        <Text style={styles.sourceBody}>{t.sourceVariance}</Text>
       </View>
     </View>
   );

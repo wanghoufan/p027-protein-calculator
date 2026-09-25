@@ -9,6 +9,7 @@ import { colors } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
 import { FoodDefinition, SelectedFood } from '../types';
+import { fmt, foodName, unitLabel, useT } from '../i18n/I18nContext';
 
 interface FoodRowProps {
   food: FoodDefinition;
@@ -36,25 +37,28 @@ export function FoodRow({
   const serving =
     food.servingOptions.find((option) => option.id === selected.servingId) ??
     food.servingOptions[0];
+  const { t, locale } = useT();
+  const displayName = foodName(food, t, locale);
+  const displayUnit = unitLabel(food.canonicalUnit, t);
   const displayValue = getDisplayQuantity(selected, serving);
   const step =
     selected.inputMode === 'serving' ? SERVING_STEP : getCanonicalStep(food.canonicalType);
   const contribution = formatProtein(calculateFoodProtein(food, selected.amountInCanonicalUnit));
-  const baseText = `${formatProtein(food.proteinPerBase)}g/${food.baseAmount}${food.canonicalUnit}`;
+  const baseText = `${formatProtein(food.proteinPerBase)}g/${food.baseAmount}${displayUnit}`;
   const hasServings = food.servingOptions.length > 0;
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <View style={styles.row}>
       <View style={styles.headerRow}>
-        <FoodIcon foodId={food.id} foodName={food.name} size={40} />
+        <FoodIcon foodId={food.id} foodName={displayName} size={40} />
         <View style={styles.nameCol}>
-          <Text style={styles.name}>{food.name}</Text>
+          <Text style={styles.name}>{displayName}</Text>
           <Text style={styles.base}>{baseText}</Text>
         </View>
         <View
           style={styles.contributionBox}
-          accessibilityLabel={`${food.name}贡献`}
+          accessibilityLabel={fmt(t.a11yContribute, { name: displayName })}
           accessibilityLiveRegion="polite"
         >
           <Text style={styles.contributionValue}>{contribution}</Text>
@@ -62,7 +66,7 @@ export function FoodRow({
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${food.name}更多操作`}
+          accessibilityLabel={fmt(t.a11yMore, { name: displayName })}
           style={styles.menuButton}
           onPress={() => setMenuOpen((open) => !open)}
         >
@@ -79,7 +83,7 @@ export function FoodRow({
               onEdit();
             }}
           >
-            <Text style={styles.menuItemText}>编辑营养值</Text>
+            <Text style={styles.menuItemText}>{t.editNutrition}</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -89,7 +93,7 @@ export function FoodRow({
               onRemove();
             }}
           >
-            <Text style={[styles.menuItemText, styles.removeText]}>从当前计算移除</Text>
+            <Text style={[styles.menuItemText, styles.removeText]}>{t.removeFromCalc}</Text>
           </Pressable>
         </View>
       ) : null}
@@ -101,33 +105,33 @@ export function FoodRow({
                 ? [
                     {
                       value: 'canonical' as const,
-                      label: food.canonicalUnit,
-                      accessibilityLabel: `${food.name}切克数`,
+                      label: displayUnit,
+                      accessibilityLabel: fmt(t.a11ySwitchCanonical, { name: displayName }),
                     },
                     {
                       value: 'serving' as const,
-                      label: '份',
-                      accessibilityLabel: `${food.name}切份量`,
+                      label: t.servingShort,
+                      accessibilityLabel: fmt(t.a11ySwitchServing, { name: displayName }),
                     },
                   ]
                 : [
                     {
                       value: 'canonical' as const,
-                      label: food.canonicalUnit,
-                      accessibilityLabel: `${food.name}单位`,
+                      label: displayUnit,
+                      accessibilityLabel: fmt(t.a11yUnit, { name: displayName }),
                     },
                   ]
             }
             value={selected.inputMode}
             onChange={onInputModeChange}
-            accessibilityLabel={`${food.name}输入模式`}
+            accessibilityLabel={fmt(t.a11yInputMode, { name: displayName })}
           />
         </View>
         <View style={styles.stepper}>
           <NumberStepper
             value={displayValue}
             step={step}
-            accessibilityLabel={`${food.name}数量`}
+            accessibilityLabel={fmt(t.a11yAmount, { name: displayName })}
             onChange={(value) => {
               if (selected.inputMode === 'serving' && serving) {
                 onAmountServing(serving.id, value);

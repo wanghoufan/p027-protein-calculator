@@ -6,7 +6,7 @@ import { radius } from '../theme/radius';
 import { shadows } from '../theme/shadows';
 import { spacing } from '../theme/spacing';
 import { ProteinGoalLevel, ProteinGoalMode, ProteinGoalSelection } from '../types';
-import { PROTEIN_GOAL_MODE_COPY } from '../data/proteinGoalModes';
+import { fmt, useT } from '../i18n/I18nContext';
 import { getGoalCoefficient } from '../domain/proteinGoal';
 
 interface ProteinGoalPickerSheetProps {
@@ -28,12 +28,13 @@ export function ProteinGoalPickerSheet({
   onSelect,
 }: ProteinGoalPickerSheetProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useT();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <Pressable
           style={styles.backdrop}
-          accessibilityLabel="关闭目标选择遮罩"
+          accessibilityLabel={t.goalPickerOverlayA11y}
           onPress={onClose}
         />
         <View style={[styles.sheet, shadows.sheet, { paddingBottom: insets.bottom + spacing.md }]}>
@@ -41,10 +42,10 @@ export function ProteinGoalPickerSheet({
             <View style={styles.handle} />
           </View>
           <View style={styles.headerRow}>
-            <Text style={styles.title}>选择蛋白质目标</Text>
+            <Text style={styles.title}>{t.goalPickerTitle}</Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="关闭目标选择"
+              accessibilityLabel={t.goalPickerCloseA11y}
               hitSlop={12}
               onPress={onClose}
             >
@@ -53,8 +54,8 @@ export function ProteinGoalPickerSheet({
           </View>
 
           <ScrollView bounces={false} style={styles.list}>
-            {(Object.keys(PROTEIN_GOAL_MODE_COPY) as ProteinGoalMode[]).map((modeId) => {
-              const copy = PROTEIN_GOAL_MODE_COPY[modeId];
+            {(Object.keys(t.goalModes) as ProteinGoalMode[]).map((modeId) => {
+              const copy = t.goalModes[modeId];
               const range = {
                 low: getGoalCoefficient(modeId, 'low'),
                 high: getGoalCoefficient(modeId, 'high'),
@@ -65,7 +66,7 @@ export function ProteinGoalPickerSheet({
                   key={modeId}
                   accessibilityRole="radio"
                   accessibilityState={{ selected }}
-                  accessibilityLabel={`${copy.name}，${range.low} 到 ${range.high}`}
+                  accessibilityLabel={fmt(t.goalRangeA11y, { name: copy.name, low: range.low, high: range.high })}
                   style={[styles.modeCard, selected && styles.modeCardSelected]}
                   onPress={() => onSelect(modeId, selection.level)}
                 >

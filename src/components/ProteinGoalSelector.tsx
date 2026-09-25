@@ -4,7 +4,7 @@ import { colors } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
 import { ProteinGoalLevel, ProteinGoalMode } from '../types';
-import { PROTEIN_GOAL_MODE_COPY } from '../data/proteinGoalModes';
+import { useT } from '../i18n/I18nContext';
 import { formatCoefficient, getGoalCoefficient } from '../domain/proteinGoal';
 
 interface ProteinGoalModeSelectorProps {
@@ -17,17 +17,18 @@ interface ProteinGoalModeSelectorProps {
  * 模式为一级概念、系数二级；选中 = 绿色实底 + 加粗（非纯颜色，附带 accessibilityState）。
  */
 export function ProteinGoalModeSelector({ mode, onSelectMode }: ProteinGoalModeSelectorProps) {
+  const { t } = useT();
   return (
-    <View style={styles.row} accessibilityRole="radiogroup" accessibilityLabel="蛋白质目标模式">
-      {PROTEIN_GOAL_MODE_COPY &&
-        (Object.keys(PROTEIN_GOAL_MODE_COPY) as ProteinGoalMode[]).map((modeId) => {
+    <View style={styles.row} accessibilityRole="radiogroup" accessibilityLabel={t.goalModeA11y}>
+      {t.goalModes &&
+        (Object.keys(t.goalModes) as ProteinGoalMode[]).map((modeId) => {
           const selected = modeId === mode;
           return (
             <Pressable
               key={modeId}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
-              accessibilityLabel={PROTEIN_GOAL_MODE_COPY[modeId].name}
+              accessibilityLabel={t.goalModes[modeId].name}
               style={[styles.chip, selected && styles.chipSelected]}
               onPress={() => onSelectMode(modeId)}
             >
@@ -35,7 +36,7 @@ export function ProteinGoalModeSelector({ mode, onSelectMode }: ProteinGoalModeS
                 style={[styles.chipText, selected && styles.chipTextSelected]}
                 numberOfLines={1}
               >
-                {PROTEIN_GOAL_MODE_COPY[modeId].name}
+                {t.goalModes[modeId].name}
               </Text>
             </Pressable>
           );
@@ -58,12 +59,13 @@ export function ProteinGoalLevelSelector({
   level,
   onSelectLevel,
 }: ProteinGoalLevelSelectorProps) {
+  const { t } = useT();
   const levels: readonly { value: ProteinGoalLevel; label: string }[] = [
-    { value: 'low', label: '低' },
-    { value: 'high', label: '高' },
+    { value: 'low', label: t.levelLow },
+    { value: 'high', label: t.levelHigh },
   ];
   return (
-    <View style={styles.levelRow} accessibilityRole="radiogroup" accessibilityLabel="目标档位">
+    <View style={styles.levelRow} accessibilityRole="radiogroup" accessibilityLabel={t.goalLevelA11y}>
       {levels.map(({ value, label }) => {
         const selected = value === level;
         return (
@@ -71,7 +73,7 @@ export function ProteinGoalLevelSelector({
             key={value}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
-            accessibilityLabel={`${label}档 ${formatCoefficient(getGoalCoefficient(mode, value))} 倍`}
+            accessibilityLabel={`${value === 'low' ? t.lowTier : t.highTier} ${formatCoefficient(getGoalCoefficient(mode, value))} ${t.timesWord}`}
             style={[styles.levelChip, selected && styles.levelChipSelected]}
             onPress={() => onSelectLevel(value)}
           >

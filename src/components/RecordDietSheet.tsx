@@ -12,7 +12,7 @@ import { spacing } from '../theme/spacing';
 import { formatProtein, calculateProteinBalance } from '../domain/protein';
 import { formatCoefficient, getGoalCoefficient } from '../domain/proteinGoal';
 import { FoodDefinition } from '../types';
-import { PROTEIN_GOAL_MODE_COPY } from '../data/proteinGoalModes';
+import { useT } from '../i18n/I18nContext';
 
 interface RecordDietSheetProps {
   visible: boolean;
@@ -33,6 +33,7 @@ export function RecordDietSheet({
   onChangeGoal,
 }: RecordDietSheetProps) {
   const insets = useSafeAreaInsets();
+  const { t, locale } = useT();
   const [pickerVisible, setPickerVisible] = useState(false);
   const [editorState, setEditorState] = useState<EditorMode | null>(null);
 
@@ -46,20 +47,26 @@ export function RecordDietSheet({
       : calculateProteinBalance(calculator.targetProtein, calculator.totalProtein);
   const remaining =
     balance?.type === 'remaining'
-      ? `还需 ${formatProtein(balance.amount)} g`
+      ? `${t.stillNeed} ${formatProtein(balance.amount)} g`
       : balance?.type === 'over'
-        ? `超出 ${formatProtein(balance.amount)} g`
+        ? `${t.over} ${formatProtein(balance.amount)} g`
         : balance?.type === 'met'
-          ? '已达标'
+          ? t.metGoal
           : '—';
   const progress =
     calculator.targetProtein !== null && calculator.targetProtein > 0
       ? calculator.totalProtein / calculator.targetProtein
       : 0;
 
-  const modeCopy = PROTEIN_GOAL_MODE_COPY[calculator.proteinGoal.mode];
-  const levelLabel = calculator.proteinGoal.level === 'low' ? '低' : '高';
+  const modeCopy = t.goalModes[calculator.proteinGoal.mode];
+  const levelLabel = calculator.proteinGoal.level === 'low' ? t.levelLow : t.levelHigh;
   const coefficient = getGoalCoefficient(calculator.proteinGoal.mode, calculator.proteinGoal.level);
+  const targetNote =
+    calculator.weightKg !== null
+      ? locale === 'en'
+        ? `${modeCopy.name} · ${levelLabel} ${formatCoefficient(coefficient)}× (${calculator.weightKg} kg)`
+        : `${modeCopy.name} · ${levelLabel} ${formatCoefficient(coefficient)}×（${calculator.weightKg} kg）`
+      : t.autoCalcNote;
 
   const openEditorForFood = (food: FoodDefinition) => {
     setEditorState(
@@ -73,14 +80,14 @@ export function RecordDietSheet({
         <View style={styles.headerRow}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="返回首页"
+            accessibilityLabel={t.backHomeA11y}
             hitSlop={12}
             style={styles.backButton}
             onPress={onClose}
           >
             <Text style={styles.backText}>‹</Text>
           </Pressable>
-          <Text style={styles.title}>记录饮食</Text>
+          <Text style={styles.title}>{t.recordDiet}</Text>
           <View style={styles.headerSpacer} />
         </View>
 
@@ -91,7 +98,7 @@ export function RecordDietSheet({
         >
           <View style={styles.targetCard}>
             <View style={styles.targetLeft}>
-              <Text style={styles.targetLabel}>今日目标</Text>
+              <Text style={styles.targetLabel}>{t.todayTarget}</Text>
               <View style={styles.targetNumberRow}>
                 <Text style={styles.targetNumber}>
                   {calculator.targetProtein === null
@@ -100,25 +107,21 @@ export function RecordDietSheet({
                 </Text>
                 <Text style={styles.targetUnit}>g</Text>
               </View>
-              <Text style={styles.targetNote}>
-                {calculator.weightKg !== null
-                  ? `${modeCopy.name} · ${levelLabel} ${formatCoefficient(coefficient)}×（${calculator.weightKg} kg）`
-                  : '输入有效体重后自动计算'}
-              </Text>
+              <Text style={styles.targetNote}>{targetNote}</Text>
             </View>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="更改目标"
+              accessibilityLabel={t.changeGoalA11y}
               style={styles.changeGoalButton}
               onPress={onChangeGoal}
             >
-              <Text style={styles.changeGoalText}>更改目标 ›</Text>
+              <Text style={styles.changeGoalText}>{t.changeGoal} ›</Text>
             </Pressable>
           </View>
 
           <View style={styles.progressCard}>
             <View style={styles.progressHeader}>
-              <Text style={styles.progressLabel}>今日已摄入</Text>
+              <Text style={styles.progressLabel}>{t.todayIntake}</Text>
               <Text style={styles.progressRight}>{remaining}</Text>
             </View>
             <Text style={styles.progressNumbers}>
@@ -130,10 +133,10 @@ export function RecordDietSheet({
                 </Text>
               ) : null}
             </Text>
-            <ProgressBar progress={progress} accessibilityLabel="蛋白质摄入进度" />
+            <ProgressBar progress={progress} accessibilityLabel={t.progressA11y} />
           </View>
 
-          <Text style={styles.sectionTitle}>添加记录</Text>
+          <Text style={styles.sectionTitle}>{t.addRecordSection}</Text>
           <View style={styles.foodCard}>
             {calculator.selectedFoods.map((selectedFood) => {
               const food = calculator.getFoodById(selectedFood.foodId);
@@ -162,11 +165,11 @@ export function RecordDietSheet({
             })}
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="添加食物"
+              accessibilityLabel={t.addFoodA11y}
               style={styles.addButton}
               onPress={() => setPickerVisible(true)}
             >
-              <Text style={styles.addButtonText}>＋ 添加食物</Text>
+              <Text style={styles.addButtonText}>{t.addFood}</Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -174,12 +177,12 @@ export function RecordDietSheet({
         {/* 底部汇总条（原型：今日已摄入 62g｜还需 47g），edge-to-edge 下避开导航栏 insets。 */}
         <View style={[styles.bottomBar, { paddingBottom: insets.bottom + spacing.md }]}>
           <View style={styles.bottomItem}>
-            <Text style={styles.bottomLabel}>今日已摄入</Text>
+            <Text style={styles.bottomLabel}>{t.todayIntake}</Text>
             <Text style={styles.bottomValue}>{formatProtein(calculator.totalProtein)} g</Text>
           </View>
           <View style={styles.bottomDivider} />
           <View style={styles.bottomItem}>
-            <Text style={styles.bottomLabel}>{balance?.type === 'over' ? '超出' : '还需'}</Text>
+            <Text style={styles.bottomLabel}>{balance?.type === 'over' ? t.over : t.stillNeed}</Text>
             <Text style={styles.bottomValue}>
               {balance?.type === 'over'
                 ? `${formatProtein(balance.amount)} g`

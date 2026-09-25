@@ -27,11 +27,13 @@ import { colors } from './src/theme/colors';
 import { spacing } from './src/theme/spacing';
 import { typography } from './src/theme/typography';
 import { FoodDefinition, PresetFoodOverride, ProteinGoalMode } from './src/types';
+import { I18nProvider, useT } from './src/i18n/I18nContext';
 
 // US6/FR-022：native splash 作为启动过渡，hydrate 完成前保持 splash（T062/T063）。
 void preventAutoHideAsync().catch(() => undefined);
 
 function CalculatorHome() {
+  const { t } = useT();
   const calculator = useProteinCalculator();
   const [pickerVisible, setPickerVisible] = useState(false);
   const [goalPickerVisible, setGoalPickerVisible] = useState(false);
@@ -81,12 +83,12 @@ function CalculatorHome() {
         <View style={styles.header}>
           <Image source={require('./assets/icon.png')} style={styles.logo} />
           <View style={styles.headerText}>
-            <Text style={typography.headerTitle}>蛋白质计算器</Text>
-            <Text style={typography.tagline}>科学计算 · 合理摄入 · 更健康的你</Text>
+            <Text style={typography.headerTitle}>{t.appName}</Text>
+            <Text style={typography.tagline}>{t.tagline}</Text>
           </View>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="设置"
+            accessibilityLabel={t.settings}
             style={styles.gearButton}
             onPress={() => setSettingsVisible(true)}
           >
@@ -102,13 +104,13 @@ function CalculatorHome() {
         <View style={styles.section}>
           <Card>
             <View style={styles.goalHeader}>
-              <Text style={typography.cardTitle}>蛋白质目标 ⓘ</Text>
+              <Text style={typography.cardTitle}>{t.proteinGoalTitle}</Text>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="如何选择蛋白质目标"
+                accessibilityLabel={t.howToChooseA11y}
                 onPress={() => setGoalPickerVisible(true)}
               >
-                <Text style={styles.howToChoose}>如何选择？ ›</Text>
+                <Text style={styles.howToChoose}>{t.howToChoose} ›</Text>
               </Pressable>
             </View>
             <View style={styles.modeSelector}>
@@ -128,10 +130,10 @@ function CalculatorHome() {
             </View>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="查看模式说明"
+              accessibilityLabel={t.viewModeDetailA11y}
               onPress={() => setDetailVisible(true)}
             >
-              <Text style={styles.detailLink}>查看模式说明与数据来源</Text>
+              <Text style={styles.detailLink}>{t.viewModeDetail}</Text>
             </Pressable>
           </Card>
         </View>
@@ -164,21 +166,21 @@ function CalculatorHome() {
         </View>
 
         <View style={styles.foodHeader}>
-          <Text style={typography.cardTitle}>今日记录</Text>
+          <Text style={typography.cardTitle}>{t.todayRecord}</Text>
           <View style={styles.foodHeaderActions}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="清空数量"
+              accessibilityLabel={t.clearA11y}
               onPress={calculator.clearAmounts}
             >
-              <Text style={styles.clearText}>清空</Text>
+              <Text style={styles.clearText}>{t.clear}</Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="打开记录饮食"
+              accessibilityLabel={t.recordDietA11y}
               onPress={() => setRecordVisible(true)}
             >
-              <Text style={styles.clearText}>记录饮食 ›</Text>
+              <Text style={styles.clearText}>{t.recordDiet} ›</Text>
             </Pressable>
           </View>
         </View>
@@ -213,11 +215,11 @@ function CalculatorHome() {
             </View>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="添加食物"
+              accessibilityLabel={t.addFoodA11y}
               style={styles.addButton}
               onPress={() => setPickerVisible(true)}
             >
-              <Text style={styles.addButtonText}>＋ 添加食物</Text>
+              <Text style={styles.addButtonText}>{t.addFood}</Text>
             </Pressable>
           </Card>
         </View>
@@ -291,8 +293,10 @@ function CalculatorHome() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <CalculatorHome />
+      <I18nProvider>
+        <StatusBar style="dark" />
+        <CalculatorHome />
+      </I18nProvider>
     </SafeAreaProvider>
   );
 }

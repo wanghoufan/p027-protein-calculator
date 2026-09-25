@@ -4,7 +4,7 @@ import { colors } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { shadows } from '../theme/shadows';
 import { spacing } from '../theme/spacing';
-import { GOAL_MODEL_MIGRATION_NOTICE } from '../data/proteinGoalModes';
+import { useT } from '../i18n/I18nContext';
 
 interface MigrationNoticeCardProps {
   visible: boolean;
@@ -22,29 +22,30 @@ export function MigrationNoticeCard({
   onAcknowledge,
   onOpenGoalPicker,
 }: MigrationNoticeCardProps) {
+  const { t } = useT();
   if (!visible) {
     return null;
   }
   return (
     <View style={[styles.card, shadows.card]} accessibilityLiveRegion="polite">
-      <Text style={styles.title}>目标模式已升级</Text>
-      <Text style={styles.body}>{GOAL_MODEL_MIGRATION_NOTICE}</Text>
+      <Text style={styles.title}>{t.migrationTitle}</Text>
+      <Text style={styles.body}>{t.goalModelMigrationNotice}</Text>
       <View style={styles.buttonRow}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="确认目标模式升级提示"
+          accessibilityLabel={t.migrationAckA11y}
           style={styles.primaryButton}
           onPress={onAcknowledge}
         >
-          <Text style={styles.primaryButtonText}>知道了</Text>
+          <Text style={styles.primaryButtonText}>{t.migrationAck}</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="重新选择目标模式"
+          accessibilityLabel={t.migrationReselectA11y}
           style={styles.secondaryButton}
           onPress={onOpenGoalPicker}
         >
-          <Text style={styles.secondaryButtonText}>重新选择目标</Text>
+          <Text style={styles.secondaryButtonText}>{t.migrationReselect}</Text>
         </Pressable>
       </View>
     </View>

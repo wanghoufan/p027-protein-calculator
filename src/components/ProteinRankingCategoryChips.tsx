@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { ProteinRankingFilter, RANKING_FILTERS } from '../types';
+import { fmt, useT } from '../i18n/I18nContext';
 
 interface ProteinRankingCategoryChipsProps {
   selected: ProteinRankingFilter;
@@ -17,25 +18,27 @@ export function ProteinRankingCategoryChips({
   selected,
   onSelect,
 }: ProteinRankingCategoryChipsProps) {
+  const { t } = useT();
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.row}
-      accessibilityLabel="排行榜分类筛选"
+      accessibilityLabel={t.rankingChipsA11y}
     >
       {RANKING_FILTERS.map((filter) => {
         const active = filter.id === selected;
+        const label = t.rankingFilters[filter.id] ?? filter.label;
         return (
           <Pressable
             key={filter.id}
             accessibilityRole="button"
-            accessibilityLabel={`分类 ${filter.label}`}
+            accessibilityLabel={fmt(t.categoryA11y, { label })}
             accessibilityState={{ selected: active }}
             style={[styles.chip, active && styles.chipActive]}
             onPress={() => onSelect(filter.id)}
           >
-            <Text style={[styles.chipText, active && styles.chipTextActive]}>{filter.label}</Text>
+            <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
           </Pressable>
         );
       })}

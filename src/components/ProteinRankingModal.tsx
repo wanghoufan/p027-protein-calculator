@@ -10,6 +10,7 @@ import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 import { ProteinRankingFilter } from '../types';
 import type { Calculator } from '../hooks/useProteinCalculator';
+import { useT } from '../i18n/I18nContext';
 
 interface ProteinRankingModalProps {
   visible: boolean;
@@ -37,6 +38,7 @@ export function ProteinRankingModal({ visible, onClose, calculator }: ProteinRan
 
 function RankingContent({ onClose, calculator }: Omit<ProteinRankingModalProps, 'visible'>) {
   const [filter, setFilter] = useState<ProteinRankingFilter>('all');
+  const { t } = useT();
 
   const rows = useMemo(() => filterProteinRanking(filter), [filter]);
   const addedIds = useMemo(
@@ -54,15 +56,15 @@ function RankingContent({ onClose, calculator }: Omit<ProteinRankingModalProps, 
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="返回首页"
+          accessibilityLabel={t.backHomeA11y}
           style={styles.back}
           onPress={onClose}
         >
           <Text style={styles.backIcon}>←</Text>
         </Pressable>
         <View style={styles.headerTextCol}>
-          <Text style={styles.title}>常见高蛋白食物榜 Top 30</Text>
-          <Text style={styles.subtitle}>按每100g可食部蛋白质含量排序</Text>
+          <Text style={styles.title}>{t.rankingTitle}</Text>
+          <Text style={styles.subtitle}>{t.rankingSubtitle}</Text>
         </View>
       </View>
       <View style={styles.chipsWrap}>
@@ -77,7 +79,7 @@ function RankingContent({ onClose, calculator }: Omit<ProteinRankingModalProps, 
         ItemSeparatorComponent={Separator}
         ListFooterComponent={RankingSourceInfo}
         contentContainerStyle={styles.listContent}
-        accessibilityLabel="高蛋白食物排行榜"
+        accessibilityLabel={t.rankingListA11y}
       />
     </SafeAreaView>
   );

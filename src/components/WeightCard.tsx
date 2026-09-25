@@ -5,6 +5,7 @@ import { NumberStepper } from './ui/NumberStepper';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
+import { useT } from '../i18n/I18nContext';
 
 interface WeightCardProps {
   weightKg: number | null;
@@ -17,25 +18,26 @@ interface WeightCardProps {
  * 体重空值/非数字/≤0 时不计算并就地提示（US1.8）。
  */
 export function WeightCard({ weightKg, onWeightChange }: WeightCardProps) {
+  const { t } = useT();
   const invalidWeight = weightKg === null || weightKg <= 0;
 
   return (
     <Card>
-      <Text style={typography.cardTitle}>我的体重</Text>
+      <Text style={typography.cardTitle}>{t.myWeight}</Text>
       <View style={styles.stepperRow}>
         <View style={styles.stepper}>
           <NumberStepper
             value={invalidWeight ? 0 : weightKg}
             step={1}
             maxDecimals={1}
-            accessibilityLabel="体重"
+            accessibilityLabel={t.weightA11y}
             variant="large"
             onChange={(value) => onWeightChange(value > 0 ? value : null)}
           />
         </View>
         <Text style={styles.unit}>kg</Text>
       </View>
-      {invalidWeight ? <Text style={styles.error}>请输入有效体重（大于 0）</Text> : null}
+      {invalidWeight ? <Text style={styles.error}>{t.weightInvalid}</Text> : null}
     </Card>
   );
 }

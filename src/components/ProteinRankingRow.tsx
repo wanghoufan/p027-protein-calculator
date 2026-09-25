@@ -5,16 +5,12 @@ import { colors } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
 import { ProteinRankingEntry, RANKING_FILTERS } from '../types';
+import { fmt, rankingName, useT } from '../i18n/I18nContext';
 
 interface ProteinRankingRowProps {
   entry: ProteinRankingEntry;
   added: boolean;
   onAdd: (foodId: string) => void;
-}
-
-/** 排行榜 UI 分类 → 展示名（肉禽/水产/蛋类/豆类）。 */
-function categoryLabel(category: ProteinRankingEntry['category']): string {
-  return RANKING_FILTERS.find((filter) => filter.id === category)?.label ?? category;
 }
 
 const TOP_BADGE_COLORS: Record<number, string> = {
@@ -29,6 +25,12 @@ const TOP_BADGE_COLORS: Record<number, string> = {
  * 第 1~3 名仅 rank 徽章轻强调；触控≥44dp；已添加为稳定状态。
  */
 export function ProteinRankingRow({ entry, added, onAdd }: ProteinRankingRowProps) {
+  const { t, locale } = useT();
+  const displayName = rankingName(entry, t, locale);
+  const categoryText =
+    t.rankingFilters[entry.category] ??
+    RANKING_FILTERS.find((filter) => filter.id === entry.category)?.label ??
+    entry.category;
   const badgeColor = TOP_BADGE_COLORS[entry.rank];
   return (
     <View style={[styles.row, badgeColor ? styles.rowTop : null]}>
@@ -37,12 +39,12 @@ export function ProteinRankingRow({ entry, added, onAdd }: ProteinRankingRowProp
           {entry.rank}
         </Text>
       </View>
-      <FoodIcon foodId={entry.foodId} foodName={entry.rankingDisplayName} size={40} />
+      <FoodIcon foodId={entry.foodId} foodName={displayName} size={40} />
       <View style={styles.nameCol}>
         <Text style={styles.name} numberOfLines={1}>
-          {entry.rankingDisplayName}
+          {displayName}
         </Text>
-        <Text style={styles.category}>{categoryLabel(entry.category)}</Text>
+        <Text style={styles.category}>{categoryText}</Text>
       </View>
       <View style={styles.valueCol}>
         <Text style={styles.value}>{entry.officialProteinPer100g.toFixed(1)} g</Text>
@@ -50,15 +52,15 @@ export function ProteinRankingRow({ entry, added, onAdd }: ProteinRankingRowProp
       </View>
       {added ? (
         <View
-          accessibilityLabel={`已添加 ${entry.rankingDisplayName}`}
+          accessibilityLabel={fmt(t.addedA11y, { name: displayName })}
           style={[styles.action, styles.actionAdded]}
         >
-          <Text style={styles.actionAddedText}>已添加</Text>
+          <Text style={styles.actionAddedText}>{t.added}</Text>
         </View>
       ) : (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`添加 ${entry.rankingDisplayName}`}
+          accessibilityLabel={fmt(t.addA11y, { name: displayName })}
           style={styles.action}
           onPress={() => onAdd(entry.foodId)}
         >

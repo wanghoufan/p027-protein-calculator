@@ -13,6 +13,7 @@ import {
 import { PRESET_FOOD_MAP } from '../data/presetFoods';
 import { getServingOverrideState } from '../domain/serving';
 import type { CustomFoodDraft } from '../hooks/useProteinCalculator';
+import { fmt, foodName, localizeError, unitLabel, useT } from '../i18n/I18nContext';
 
 export type EditorMode =
   | { kind: 'preset'; food: FoodDefinition }
@@ -33,10 +34,10 @@ interface FoodEditorModalProps {
   onDeleteCustom: (foodId: string) => void;
 }
 
-const CANONICAL_TYPE_OPTIONS: readonly { value: CanonicalType; label: string }[] = [
-  { value: 'mass', label: '重量 (g)' },
-  { value: 'volume', label: '容量 (ml)' },
-  { value: 'count', label: '计数' },
+const CANONICAL_TYPE_OPTIONS: readonly { value: CanonicalType; labelKey: 'typeMass' | 'typeVolume' | 'typeCount' }[] = [
+  { value: 'mass', labelKey: 'typeMass' },
+  { value: 'volume', labelKey: 'typeVolume' },
+  { value: 'count', labelKey: 'typeCount' },
 ];
 
 type ServingDraft = ServingOption;
@@ -98,6 +99,7 @@ function FoodEditorForm({
   );
   const [errors, setErrors] = useState<string[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const { t, locale } = useT();
 
   const mode = state.kind;
 
@@ -105,18 +107,19 @@ function FoodEditorForm({
   const isCustomCreate = mode === 'custom-create';
   const isCustomEdit = mode === 'custom-edit';
   const food = state.kind === 'preset' || state.kind === 'custom-edit' ? state.food : null;
+  const displayFoodName = food ? foodName(food, t, locale) : '';
   const unit = food
-    ? food.canonicalUnit
+    ? unitLabel(food.canonicalUnit, t)
     : canonicalType === 'volume'
       ? 'ml'
       : canonicalType === 'count'
-        ? (countUnit as never)
+        ? unitLabel(countUnit, t)
         : 'g';
   const title = isPreset
-    ? `编辑 ${food!.name}`
+    ? fmt(t.editTitle, { name: displayFoodName })
     : isCustomCreate
-      ? '新建自定义食物'
-      : `编辑 ${food!.name}`;
+      ? t.createTitle
+      : fmt(t.editTitle, { name: displayFoodName });
 
   const buildServings = (): ServingOption[] =>
     servings
@@ -184,18 +187,18 @@ function FoodEditorForm({
   return (
     <Modal transparent visible animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="编辑器遮罩" />
+        <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t.editorOverlayA11y} />
         <ScrollView
           style={styles.card}
           contentContainerStyle={styles.cardContent}
           bounces={false}
-          accessibilityLabel="自定义食物编辑器"
+          accessibilityLabel={t.editorA11y}
         >
           <View style={styles.headerRow}>
             <Text style={styles.title}>{title}</Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="关闭编辑器"
+              accessibilityLabel={t.editorCloseA11y}
               hitSlop={12}
               onPress={onClose}
             >
@@ -205,28 +208,28 @@ function FoodEditorForm({
 
           {!isPreset ? (
             <>
-              <Text style={styles.fieldLabel}>名称</Text>
+              <Text style={styles.fieldLabel}>{t.fieldName}</Text>
               <TextInput
                 style={styles.input}
                 value={name}
                 onChangeText={setName}
-                placeholder="例如：蛋白棒"
+                placeholder={t.namePlaceholder}
                 placeholderTextColor={colors.textSecondary}
-                accessibilityLabel="食物名称"
+                accessibilityLabel={t.nameA11y}
               />
             </>
           ) : null}
 
           {!isPreset ? (
             <>
-              <Text style={styles.fieldLabel}>数量类型</Text>
+              <Text style={styles.fieldLabel}>{t.amountType}</Text>
               <View style={styles.optionRow}>
                 {CANONICAL_TYPE_OPTIONS.map((option) => (
                   <Pressable
                     key={option.value}
                     accessibilityRole="radio"
                     accessibilityState={{ selected: canonicalType === option.value }}
-                    accessibilityLabel={`数量类型 ${option.label}`}
+                    accessibilityLabel={fmt(t.amountTypeA11y, { label: t[option.labelKey] })}
                     style={[styles.option, canonicalType === option.value && styles.optionSelected]}
                     onPress={() => setCanonicalType(option.value)}
                   >
@@ -236,21 +239,21 @@ function FoodEditorForm({
                         canonicalType === option.value && styles.optionTextSelected,
                       ]}
                     >
-                      {option.label}
+                      {t[option.labelKey]}
                     </Text>
                   </Pressable>
                 ))}
               </View>
               {canonicalType === 'count' ? (
                 <>
-                  <Text style={styles.fieldLabel}>计数单位</Text>
+                  <Text style={styles.fieldLabel}>{t.countUnitLabel}</Text>
                   <View style={styles.optionRow}>
                     {COUNT_UNITS.map((unit) => (
                       <Pressable
                         key={unit}
                         accessibilityRole="radio"
                         accessibilityState={{ selected: countUnit === unit }}
-                        accessibilityLabel={`计数单位 ${unit}`}
+                        accessibilityLabel={fmt(t.countUnitA11y, { unit: unitLabel(unit, t) })}
                         style={[styles.optionSmall, countUnit === unit && styles.optionSelected]}
                         onPress={() => setCountUnit(unit)}
                       >
@@ -260,7 +263,7 @@ function FoodEditorForm({
                             countUnit === unit && styles.optionTextSelected,
                           ]}
                         >
-                          {unit}
+                          {unitLabel(unit, t)}
                         </Text>
                       </Pressable>
                     ))}
@@ -270,32 +273,35 @@ function FoodEditorForm({
             </>
           ) : (
             <Text style={styles.hint}>
-              数量类型固定为 {food!.canonicalUnit}（{food!.canonicalType}），不可修改。
+              {fmt(t.presetTypeFixed, {
+                unit: unitLabel(food!.canonicalUnit, t),
+                type: food!.canonicalType,
+              })}
             </Text>
           )}
 
-          <Text style={styles.fieldLabel}>蛋白质含量（g / 基准数量）</Text>
+          <Text style={styles.fieldLabel}>{t.proteinContent}</Text>
           <TextInput
             style={styles.input}
             value={proteinPerBase}
             onChangeText={setProteinPerBase}
             keyboardType="decimal-pad"
-            accessibilityLabel="蛋白质含量"
+            accessibilityLabel={t.proteinContentA11y}
           />
 
-          <Text style={styles.fieldLabel}>基准数量（{unit}）</Text>
+          <Text style={styles.fieldLabel}>{fmt(t.baseAmountLabel, { unit })}</Text>
           <TextInput
             style={styles.input}
             value={baseAmount}
             onChangeText={setBaseAmount}
             keyboardType="decimal-pad"
-            accessibilityLabel="基准数量"
+            accessibilityLabel={t.baseAmountA11y}
             editable={!isPreset || true}
           />
 
           {canonicalType !== 'count' || isPreset ? (
             <>
-              <Text style={styles.fieldLabel}>常用份量（可选）</Text>
+              <Text style={styles.fieldLabel}>{t.servingsOptional}</Text>
               {servings.map((option, index) => {
                 const overridden = getSystemServingOverridden(option);
                 return (
@@ -311,19 +317,19 @@ function FoodEditorForm({
                         }
                       >
                         {overridden
-                          ? '已修改'
+                          ? t.servingModified
                           : option.origin === 'SYSTEM_DEFAULT'
-                            ? '系统'
-                            : '自定义'}
+                            ? t.servingSystem
+                            : t.servingCustom}
                       </Text>
                     </View>
                     <TextInput
                       style={[styles.input, styles.servingLabelInput]}
                       value={option.label}
                       onChangeText={(text) => updateServing(index, { label: text })}
-                      placeholder="名称，如 1块"
+                      placeholder={t.servingLabelPlaceholder}
                       placeholderTextColor={colors.textSecondary}
-                      accessibilityLabel={`份量名称${index + 1}`}
+                      accessibilityLabel={fmt(t.servingLabelA11y, { n: index + 1 })}
                     />
                     <TextInput
                       style={[styles.input, styles.servingAmountInput]}
@@ -335,26 +341,26 @@ function FoodEditorForm({
                         });
                       }}
                       keyboardType="decimal-pad"
-                      accessibilityLabel={`份量数量${index + 1}`}
+                      accessibilityLabel={fmt(t.servingAmountA11y, { n: index + 1 })}
                     />
                     <Text style={styles.servingUnit}>{unit}</Text>
                     {option.origin === 'USER_DEFINED' ? (
                       <Pressable
                         accessibilityRole="button"
-                        accessibilityLabel={`删除份量${index + 1}`}
+                        accessibilityLabel={fmt(t.servingDeleteA11y, { n: index + 1 })}
                         onPress={() => setServings((prev) => prev.filter((_, i) => i !== index))}
                       >
-                        <Text style={styles.removeServing}>删除</Text>
+                        <Text style={styles.removeServing}>{t.delete}</Text>
                       </Pressable>
                     ) : (
-                      <Text style={styles.removeServingDisabled}>系统份量不可删</Text>
+                      <Text style={styles.removeServingDisabled}>{t.systemServingNoDelete}</Text>
                     )}
                   </View>
                 );
               })}
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="新增份量"
+                accessibilityLabel={t.addServingA11y}
                 onPress={() =>
                   setServings((prev) => [
                     ...prev,
@@ -367,20 +373,20 @@ function FoodEditorForm({
                   ])
                 }
               >
-                <Text style={styles.addServing}>+ 添加常用份量</Text>
+                <Text style={styles.addServing}>{t.addServing}</Text>
               </Pressable>
             </>
           ) : null}
 
           {isPreset ? (
-            <Text style={styles.estimateHint}>默认值仅作估算，优先以实际包装营养标签为准</Text>
+            <Text style={styles.estimateHint}>{t.estimateHint}</Text>
           ) : null}
 
           {errors.length > 0 ? (
             <View style={styles.errorBox}>
               {errors.map((error) => (
                 <Text key={error} style={styles.errorText}>
-                  · {error}
+                  · {localizeError(error, t)}
                 </Text>
               ))}
             </View>
@@ -388,24 +394,24 @@ function FoodEditorForm({
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="保存"
+            accessibilityLabel={t.saveA11y}
             style={styles.saveButton}
             onPress={isPreset ? handleSavePreset : handleSaveCustom}
           >
-            <Text style={styles.saveButtonText}>保存</Text>
+            <Text style={styles.saveButtonText}>{t.save}</Text>
           </Pressable>
 
           {isPreset && food && hasPresetOverride(food.id) ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="恢复默认"
+              accessibilityLabel={t.resetDefaultA11y}
               style={styles.resetButton}
               onPress={() => {
                 onResetPresetOverride(food!.id);
                 onClose();
               }}
             >
-              <Text style={styles.resetButtonText}>恢复默认</Text>
+              <Text style={styles.resetButtonText}>{t.resetDefault}</Text>
             </Pressable>
           ) : null}
 
@@ -413,38 +419,38 @@ function FoodEditorForm({
             confirmDelete ? (
               <View style={styles.deleteConfirmBox}>
                 <Text style={styles.deleteConfirmText}>
-                  删除后将从当前计算与常用区一并移除，确定删除？
+                  {t.deleteConfirm}
                 </Text>
                 <View style={styles.deleteConfirmRow}>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="取消删除"
+                    accessibilityLabel={t.cancelDeleteA11y}
                     style={styles.cancelDeleteButton}
                     onPress={() => setConfirmDelete(false)}
                   >
-                    <Text style={styles.resetButtonText}>取消</Text>
+                    <Text style={styles.resetButtonText}>{t.cancel}</Text>
                   </Pressable>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="确认删除"
+                    accessibilityLabel={t.confirmDeleteA11y}
                     style={styles.deleteButton}
                     onPress={() => {
                       onDeleteCustom(food!.id);
                       onClose();
                     }}
                   >
-                    <Text style={styles.deleteButtonText}>确认删除</Text>
+                    <Text style={styles.deleteButtonText}>{t.confirmDelete}</Text>
                   </Pressable>
                 </View>
               </View>
             ) : (
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="删除自定义食物"
+                accessibilityLabel={t.deleteFoodA11y}
                 style={styles.deleteButton}
                 onPress={() => setConfirmDelete(true)}
               >
-                <Text style={styles.deleteButtonText}>删除此食物</Text>
+                <Text style={styles.deleteButtonText}>{t.deleteFood}</Text>
               </Pressable>
             )
           ) : null}

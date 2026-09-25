@@ -4,6 +4,7 @@ import { colors } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { shadows } from '../theme/shadows';
 import { spacing } from '../theme/spacing';
+import { fmt, useT } from '../i18n/I18nContext';
 
 interface AboutSheetProps {
   visible: boolean;
@@ -15,7 +16,7 @@ interface AboutSheetProps {
 
 /**
  * 齿轮真实入口（FR-020：不允许无行为按钮）：
- * 关于（名称/版本/口号/离线说明）+ 清空当前食物数量 + 恢复默认营养值。
+ * 语言切换（Change B）+ 关于（名称/版本/口号/离线说明）+ 清空当前食物数量 + 恢复默认营养值。
  * 只使用现有 hook 能力：清空 = clearAmounts；恢复默认 = 逐个删除 preset override。
  */
 export function AboutSheet({
@@ -25,19 +26,24 @@ export function AboutSheet({
   onResetOverrides,
   overrideCount,
 }: AboutSheetProps) {
+  const { t, locale, setLocale } = useT();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} accessibilityLabel="关闭设置遮罩" onPress={onClose} />
+        <Pressable
+          style={styles.backdrop}
+          accessibilityLabel={t.closeOverlayA11y}
+          onPress={onClose}
+        />
         <View style={[styles.sheet, shadows.sheet]}>
           <View style={styles.handleArea}>
             <View style={styles.handle} />
           </View>
           <View style={styles.headerRow}>
-            <Text style={styles.title}>设置</Text>
+            <Text style={styles.title}>{t.settings}</Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="关闭设置"
+              accessibilityLabel={t.closeA11y}
               hitSlop={12}
               onPress={onClose}
             >
@@ -46,30 +52,58 @@ export function AboutSheet({
           </View>
 
           <View style={styles.aboutCard}>
-            <Text style={styles.appName}>蛋白质计算器</Text>
+            <Text style={styles.appName}>{t.appName}</Text>
             <Text style={styles.version}>V1.0.0</Text>
-            <Text style={styles.slogan}>吃对蛋白质，更好的自己</Text>
-            <Text style={styles.desc}>
-              离线单机工具，无需注册与联网；体重、食物与修改仅保存在本机。
-            </Text>
+            <Text style={styles.slogan}>{t.aboutSlogan}</Text>
+            <Text style={styles.desc}>{t.aboutDesc}</Text>
           </View>
 
-          <Text style={styles.sectionTitle}>操作</Text>
+          <Text style={styles.sectionTitle}>{t.languageSection}</Text>
+          <View style={styles.langRow}>
+            <Pressable
+              accessibilityRole="radio"
+              accessibilityState={{ selected: locale === 'zh' }}
+              accessibilityLabel={t.langZh}
+              style={[styles.langButton, locale === 'zh' && styles.langButtonSelected]}
+              onPress={() => setLocale('zh')}
+            >
+              <Text
+                style={[styles.langText, locale === 'zh' && styles.langTextSelected]}
+              >
+                {t.langZh}
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="radio"
+              accessibilityState={{ selected: locale === 'en' }}
+              accessibilityLabel={t.langEn}
+              style={[styles.langButton, locale === 'en' && styles.langButtonSelected]}
+              onPress={() => setLocale('en')}
+            >
+              <Text
+                style={[styles.langText, locale === 'en' && styles.langTextSelected]}
+              >
+                English
+              </Text>
+            </Pressable>
+          </View>
+
+          <Text style={styles.sectionTitle}>{t.operations}</Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="清空当前数量"
+            accessibilityLabel={t.clearAmountsA11y}
             style={[styles.actionButton, styles.actionClear]}
             onPress={() => {
               onClearAmounts();
               onClose();
             }}
           >
-            <Text style={styles.actionClearText}>清空当前食物数量</Text>
-            <Text style={styles.actionHint}>所有已添加食物的数量归 0，不删除食物</Text>
+            <Text style={styles.actionClearText}>{t.clearAmountsAction}</Text>
+            <Text style={styles.actionHint}>{t.clearAmountsHint}</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="恢复默认营养值"
+            accessibilityLabel={t.resetOverridesA11y}
             style={[
               styles.actionButton,
               styles.actionReset,
@@ -84,12 +118,12 @@ export function AboutSheet({
             <Text
               style={[styles.actionResetText, overrideCount === 0 && styles.actionDisabledText]}
             >
-              恢复默认营养值
+              {t.resetOverridesAction}
             </Text>
             <Text style={[styles.actionHint, overrideCount === 0 && styles.actionDisabledText]}>
               {overrideCount > 0
-                ? `清除 ${overrideCount} 个食物的营养值修改，不删除自定义食物`
-                : '暂无已修改营养值的食物'}
+                ? fmt(t.resetOverridesHintSome, { n: overrideCount })
+                : t.resetOverridesHintNone}
             </Text>
           </Pressable>
         </View>
@@ -184,6 +218,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.textSecondary,
+  },
+  langRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  langButton: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  langButtonSelected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primarySoft,
+  },
+  langText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  langTextSelected: {
+    color: colors.primary,
+    fontWeight: '700',
   },
   actionButton: {
     borderRadius: radius.control,

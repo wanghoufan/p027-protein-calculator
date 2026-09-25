@@ -4,6 +4,7 @@ import { colors } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { shadows } from '../theme/shadows';
 import { spacing } from '../theme/spacing';
+import { useT } from '../i18n/I18nContext';
 
 interface ProteinRankingEntryCardProps {
   onPress: () => void;
@@ -14,10 +15,11 @@ interface ProteinRankingEntryCardProps {
  * 位于主计算汇总之后、品牌装饰之前；整卡可点击，触控区域≥44dp，方案 B 视觉。
  */
 export function ProteinRankingEntryCard({ onPress }: ProteinRankingEntryCardProps) {
+  const { t } = useT();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="打开常见高蛋白食物榜 Top 30"
+      accessibilityLabel={t.rankingEntryA11y}
       style={({ pressed }) => [styles.card, shadows.card, pressed && styles.pressed]}
       onPress={onPress}
     >
@@ -25,10 +27,10 @@ export function ProteinRankingEntryCard({ onPress }: ProteinRankingEntryCardProp
         <Text style={styles.trophyIcon}>🏆</Text>
       </View>
       <View style={styles.textCol}>
-        <Text style={styles.title}>常见高蛋白食物榜</Text>
-        <Text style={styles.subtitle}>30种日常食物 · 按每100g蛋白质排序</Text>
+        <Text style={styles.title}>{t.rankingEntryTitle}</Text>
+        <Text style={styles.subtitle}>{t.rankingEntrySubtitle}</Text>
       </View>
-      <Text style={styles.link}>Top 30 ›</Text>
+      <Text style={styles.link}>{t.rankingLink}</Text>
     </Pressable>
   );
 }

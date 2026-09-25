@@ -19,6 +19,7 @@ import { shadows } from '../theme/shadows';
 import { spacing } from '../theme/spacing';
 import { FoodDefinition, PRESET_CATEGORIES } from '../types';
 import type { Calculator } from '../hooks/useProteinCalculator';
+import { fmt, foodName, unitLabel, useT } from '../i18n/I18nContext';
 
 interface FoodPickerSheetProps {
   visible: boolean;
@@ -41,6 +42,7 @@ export function FoodPickerSheet({
   onRequestEditFood,
 }: FoodPickerSheetProps) {
   const [query, setQuery] = useState('');
+  const { t, locale } = useT();
   const translateY = useMemo(() => new Animated.Value(0), []);
 
   const selectedIds = useMemo(
@@ -85,24 +87,34 @@ export function FoodPickerSheet({
     if (trimmed.length === 0) {
       return [];
     }
-    return calculator.effectiveFoods.filter((food) => food.name.includes(trimmed));
-  }, [trimmed, calculator.effectiveFoods]);
+    const lowered = trimmed.toLowerCase();
+    return calculator.effectiveFoods.filter(
+      (food) =>
+        food.name.includes(trimmed) ||
+        (locale === 'en' &&
+          (t.foods[food.id] ?? '').toLowerCase().includes(lowered)),
+    );
+  }, [trimmed, calculator.effectiveFoods, locale, t]);
 
   const renderFoodRow = (food: FoodDefinition) => {
     const selected = selectedIds.has(food.id);
+    const displayName = foodName(food, t, locale);
     return (
       <View key={food.id} style={styles.foodRow}>
-        <FoodIcon foodId={food.id} foodName={food.name} size={36} />
+        <FoodIcon foodId={food.id} foodName={displayName} size={36} />
         <View style={styles.foodNameCol}>
-          <Text style={styles.foodName}>{food.name}</Text>
+          <Text style={styles.foodName}>{displayName}</Text>
           <Text style={styles.foodBase}>
             {food.proteinPerBase}g / {food.baseAmount}
-            {food.canonicalUnit}
+            {unitLabel(food.canonicalUnit, t)}
           </Text>
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${selected ? '移除' : '添加'} ${food.name}`}
+          accessibilityLabel={fmt(t.actionA11y, {
+            action: selected ? t.wordRemove : t.wordAdd,
+            name: displayName,
+          })}
           style={[styles.action, selected && styles.actionSelected]}
           onPress={() => toggleFood(food.id)}
         >
@@ -117,9 +129,9 @@ export function FoodPickerSheet({
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} accessibilityLabel="关闭选择器遮罩" onPress={onClose} />
+        <Pressable style={styles.backdrop} accessibilityLabel={t.pickerOverlayA11y} onPress={onClose} />
         <Animated.View
-          accessibilityLabel="食物选择器"
+          accessibilityLabel={t.pickerA11y}
           style={[styles.sheet, shadows.sheet, { transform: [{ translateY }] }]}
         >
           <View {...panHandlers}>
@@ -127,10 +139,10 @@ export function FoodPickerSheet({
               <View style={styles.handle} />
             </View>
             <View style={styles.headerRow}>
-              <Text style={styles.title}>添加食物</Text>
+              <Text style={styles.title}>{t.pickerTitle}</Text>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="关闭选择器"
+                accessibilityLabel={t.pickerCloseA11y}
                 hitSlop={12}
                 onPress={onClose}
               >
@@ -142,11 +154,11 @@ export function FoodPickerSheet({
             <Text style={styles.searchIcon}>⌕</Text>
             <TextInput
               style={styles.search}
-              placeholder="搜索食物"
+              placeholder={t.searchPlaceholder}
               placeholderTextColor={colors.textSecondary}
               value={query}
               onChangeText={setQuery}
-              accessibilityLabel="搜索食物"
+              accessibilityLabel={t.searchA11y}
               keyboardType="default"
               returnKeyType="search"
             />
@@ -160,11 +172,11 @@ export function FoodPickerSheet({
               searchResults.length > 0 ? (
                 searchResults.map(renderFoodRow)
               ) : (
-                <Text style={styles.empty}>没有找到匹配的食物</Text>
+                <Text style={styles.empty}>{t.noResults}</Text>
               )
             ) : (
               <>
-                <Text style={styles.sectionTitle}>常用食物</Text>
+                <Text style={styles.sectionTitle}>{t.recentSection}</Text>
                 <RecentFoodStrip
                   foods={recentFoods}
                   selectedIds={selectedIds}
@@ -173,7 +185,7 @@ export function FoodPickerSheet({
                 {PRESET_CATEGORIES.map((category) => (
                   <FoodCategorySection
                     key={category.id}
-                    title={category.label}
+                    title={t.categories[category.id] ?? category.label}
                     foods={calculator.effectiveFoods.filter(
                       (food) => food.source === 'preset' && food.category === category.id,
                     )}
@@ -182,15 +194,15 @@ export function FoodPickerSheet({
                   />
                 ))}
                 <View style={[styles.section, styles.customSection]}>
-                  <Text style={styles.sectionTitle}>我的食物</Text>
+                  <Text style={styles.sectionTitle}>{t.myFoods}</Text>
                   {calculator.customFoods.length === 0 ? (
-                    <Text style={styles.customEmpty}>还没有自定义食物</Text>
+                    <Text style={styles.customEmpty}>{t.myFoodsEmpty}</Text>
                   ) : (
                     calculator.customFoods.map(renderFoodRow)
                   )}
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="新建自定义食物"
+                    accessibilityLabel={t.createCustomA11y}
                     style={styles.createCustom}
                     onPress={onRequestCreateCustom}
                   >
@@ -198,8 +210,8 @@ export function FoodPickerSheet({
                       <Text style={styles.createCustomPlusText}>＋</Text>
                     </View>
                     <View style={styles.createCustomTextCol}>
-                      <Text style={styles.createCustomText}>自定义食物</Text>
-                      <Text style={styles.createCustomHint}>添加你常吃的食物</Text>
+                      <Text style={styles.createCustomText}>{t.createCustom}</Text>
+                      <Text style={styles.createCustomHint}>{t.createCustomHint}</Text>
                     </View>
                   </Pressable>
                 </View>
