@@ -4,7 +4,7 @@
 
 [中文](./README.md)
 
-![Home](docs/screenshots/home.png) ![High-protein ranking](docs/screenshots/ranking.png)
+![Home](docs/screenshots/home.png) ![Dark home](docs/screenshots/dark-home.png) ![High-protein ranking](docs/screenshots/ranking.png)
 
 ## What is this
 
@@ -12,12 +12,13 @@ Protein Calculator is an offline Android app (Expo + React Native). It answers o
 
 ## What you can do
 
-- **Daily target**: enter your weight, pick 1.0 or 1.5 g/kg, and get your daily grams instantly (60 kg × 1.5 = 90 g/day).
+- **Daily target**: enter your weight, pick one of 4 goal modes (daily maintenance 0.8–1.0, fitness maintenance 1.2–1.6, muscle gain 1.6–2.0, fat loss 1.6–2.4 g/kg) plus a low/high tier, and get your daily grams instantly (60 kg × muscle-gain low 1.6 = 96 g/day). Mode explanations and data sources ship inside the app and work offline.
 - **This meal's total**: adjust food amounts (by g / ml / piece, or handy servings like 块/瓶) and watch total intake, remaining amount, and progress update live.
 - **Top 30 high-protein ranking**: 30 common foods ranked by protein per 100 g; tap `+` to add foods straight into the calculator without leaving the list.
 - **Make values yours**: override preset nutrition values and servings to match package labels, add fully custom foods, restore defaults anytime.
 - **Pick up where you left off**: weight, coefficient, amounts, and custom foods persist on-device and survive process kills; corrupted storage falls back to defaults instead of crashing.
 - **Dark mode**: follows your system setting by default, or pick Follow system / Light / Dark manually in Settings; your choice is saved on-device.
+- **Bilingual**: switch between Chinese and English in Settings; food names, rankings, and units follow along, and the preference is saved on-device.
 
 ## Quick start
 
