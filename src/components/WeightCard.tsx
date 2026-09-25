@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Card } from './ui/Card';
 import { NumberStepper } from './ui/NumberStepper';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { spacing } from '../theme/spacing';
-import { typography } from '../theme/typography';
+import { useTheme } from '../theme/ThemeContext';
 import { useT } from '../i18n/I18nContext';
 
 interface WeightCardProps {
@@ -18,6 +18,8 @@ interface WeightCardProps {
  * 体重空值/非数字/≤0 时不计算并就地提示（US1.8）。
  */
 export function WeightCard({ weightKg, onWeightChange }: WeightCardProps) {
+  const { colors, typography } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t } = useT();
   const invalidWeight = weightKg === null || weightKg <= 0;
 
@@ -42,24 +44,26 @@ export function WeightCard({ weightKg, onWeightChange }: WeightCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  stepperRow: {
-    marginTop: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  stepper: {
-    flex: 1,
-  },
-  unit: {
-    fontSize: 15,
-    color: colors.textSecondary,
-    fontWeight: '600',
-    marginLeft: spacing.sm,
-  },
-  error: {
-    marginTop: spacing.sm,
-    fontSize: 13,
-    color: colors.danger,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    stepperRow: {
+      marginTop: spacing.md,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    stepper: {
+      flex: 1,
+    },
+    unit: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      fontWeight: '600',
+      marginLeft: spacing.sm,
+    },
+    error: {
+      marginTop: spacing.sm,
+      fontSize: 13,
+      color: colors.danger,
+    },
+  });
+}

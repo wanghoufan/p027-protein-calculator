@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { FoodIcon } from './ui/FoodIcon';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { spacing } from '../theme/spacing';
+import { useTheme } from '../theme/ThemeContext';
 import { FoodDefinition } from '../types';
 import { fmt, foodName, unitLabel, useT } from '../i18n/I18nContext';
 
@@ -21,6 +22,8 @@ export function FoodCategorySection({
   onToggle,
 }: FoodCategorySectionProps) {
   const [expanded, setExpanded] = useState(false);
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t, locale } = useT();
   const headerFood = foods[0];
   return (
@@ -73,71 +76,73 @@ export function FoodCategorySection({
   );
 }
 
-const styles = StyleSheet.create({
-  section: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    minHeight: 52,
-    paddingVertical: spacing.sm,
-  },
-  title: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  count: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  chevron: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginLeft: spacing.xs,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    minHeight: 56,
-    paddingVertical: spacing.xs,
-  },
-  nameCol: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  base: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 1,
-  },
-  action: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionSelected: {
-    backgroundColor: colors.primarySoft,
-  },
-  actionText: {
-    fontSize: 18,
-    lineHeight: 20,
-    fontWeight: '700',
-    color: colors.surface,
-  },
-  actionTextSelected: {
-    color: colors.primary,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    section: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      minHeight: 52,
+      paddingVertical: spacing.sm,
+    },
+    title: {
+      flex: 1,
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    count: {
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    chevron: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginLeft: spacing.xs,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      minHeight: 56,
+      paddingVertical: spacing.xs,
+    },
+    nameCol: {
+      flex: 1,
+    },
+    name: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.textPrimary,
+    },
+    base: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 1,
+    },
+    action: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    actionSelected: {
+      backgroundColor: colors.primarySoft,
+    },
+    actionText: {
+      fontSize: 18,
+      lineHeight: 20,
+      fontWeight: '700',
+      color: colors.surface,
+    },
+    actionTextSelected: {
+      color: colors.primary,
+    },
+  });
+}

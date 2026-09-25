@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FoodRow } from './FoodRow';
@@ -6,9 +6,10 @@ import { FoodPickerSheet } from './FoodPickerSheet';
 import { FoodEditorModal, EditorMode } from './FoodEditorModal';
 import { ProgressBar } from './ui/ProgressBar';
 import { Calculator } from '../hooks/useProteinCalculator';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
+import { useTheme } from '../theme/ThemeContext';
 import { formatProtein, calculateProteinBalance } from '../domain/protein';
 import { formatCoefficient, getGoalCoefficient } from '../domain/proteinGoal';
 import { FoodDefinition } from '../types';
@@ -33,6 +34,8 @@ export function RecordDietSheet({
   onChangeGoal,
 }: RecordDietSheetProps) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t, locale } = useT();
   const [pickerVisible, setPickerVisible] = useState(false);
   const [editorState, setEditorState] = useState<EditorMode | null>(null);
@@ -218,187 +221,189 @@ export function RecordDietSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-  },
-  backButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backText: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginTop: -2,
-  },
-  title: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 17,
-    fontWeight: '800',
-    color: colors.textPrimary,
-  },
-  headerSpacer: {
-    width: 48,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: spacing.lg,
-  },
-  targetCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: radius.card,
-    backgroundColor: colors.targetCard,
-    padding: spacing.lg,
-  },
-  targetLeft: {
-    flex: 1,
-  },
-  targetLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  targetNumberRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginTop: 2,
-  },
-  targetNumber: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  targetUnit: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginLeft: spacing.xs,
-  },
-  targetNote: {
-    marginTop: 2,
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  changeGoalButton: {
-    minHeight: 48,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.control,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  changeGoalText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  progressCard: {
-    marginTop: spacing.md,
-    borderRadius: radius.card,
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  progressLabel: {
-    fontSize: 13,
-    color: colors.textSecondary,
-  },
-  progressRight: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  progressNumbers: {
-    marginTop: 2,
-    marginBottom: spacing.sm,
-  },
-  progressTotal: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.textPrimary,
-  },
-  progressTarget: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  sectionTitle: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  foodCard: {
-    borderRadius: radius.card,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  addButton: {
-    marginTop: spacing.sm,
-    marginBottom: spacing.sm,
-    minHeight: 50,
-    borderRadius: radius.control + 4,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButtonText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.surface,
-  },
-  bottomBar: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.md,
-    borderTopLeftRadius: radius.sheet,
-    borderTopRightRadius: radius.sheet,
-  },
-  bottomItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  bottomLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  bottomValue: {
-    marginTop: 2,
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.textPrimary,
-  },
-  bottomDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: colors.border,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+    },
+    backButton: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    backText: {
+      fontSize: 26,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginTop: -2,
+    },
+    title: {
+      flex: 1,
+      textAlign: 'center',
+      fontSize: 17,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    headerSpacer: {
+      width: 48,
+    },
+    scroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      padding: spacing.lg,
+    },
+    targetCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderRadius: radius.card,
+      backgroundColor: colors.targetCard,
+      padding: spacing.lg,
+    },
+    targetLeft: {
+      flex: 1,
+    },
+    targetLabel: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+    targetNumberRow: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      marginTop: 2,
+    },
+    targetNumber: {
+      fontSize: 36,
+      fontWeight: '800',
+      color: colors.primary,
+    },
+    targetUnit: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginLeft: spacing.xs,
+    },
+    targetNote: {
+      marginTop: 2,
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    changeGoalButton: {
+      minHeight: 48,
+      paddingHorizontal: spacing.md,
+      borderRadius: radius.control,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    changeGoalText: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+    progressCard: {
+      marginTop: spacing.md,
+      borderRadius: radius.card,
+      backgroundColor: colors.surface,
+      padding: spacing.lg,
+    },
+    progressHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    progressLabel: {
+      fontSize: 13,
+      color: colors.textSecondary,
+    },
+    progressRight: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+    progressNumbers: {
+      marginTop: 2,
+      marginBottom: spacing.sm,
+    },
+    progressTotal: {
+      fontSize: 24,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    progressTarget: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    sectionTitle: {
+      marginTop: spacing.lg,
+      marginBottom: spacing.sm,
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    foodCard: {
+      borderRadius: radius.card,
+      backgroundColor: colors.surface,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+    },
+    addButton: {
+      marginTop: spacing.sm,
+      marginBottom: spacing.sm,
+      minHeight: 50,
+      borderRadius: radius.control + 4,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addButtonText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.surface,
+    },
+    bottomBar: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.md,
+      borderTopLeftRadius: radius.sheet,
+      borderTopRightRadius: radius.sheet,
+    },
+    bottomItem: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    bottomLabel: {
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    bottomValue: {
+      marginTop: 2,
+      fontSize: 18,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    bottomDivider: {
+      width: 1,
+      height: 32,
+      backgroundColor: colors.border,
+    },
+  });
+}

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../../theme/colors';
+import { Palette } from '../../theme/colors';
+import { useTheme } from '../../theme/ThemeContext';
 
 const FOOD_IMAGES: Readonly<Record<string, number>> = {
   'chicken-breast': require('../../../assets/foods/chicken-breast.png'),
@@ -50,6 +51,8 @@ interface FoodIconProps {
  * 34 种内置食物使用 style-B 3D 软萌图标；自定义食物无图标，用统一扁平风绿色首字兜底。
  */
 export function FoodIcon({ foodId, foodName, size = 40 }: FoodIconProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const image = FOOD_IMAGES[foodId];
   if (image) {
     return (
@@ -69,14 +72,16 @@ export function FoodIcon({ foodId, foodName, size = 40 }: FoodIconProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  fallback: {
-    backgroundColor: colors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fallbackText: {
-    color: colors.primary,
-    fontWeight: '700',
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    fallback: {
+      backgroundColor: colors.primarySoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    fallbackText: {
+      color: colors.primary,
+      fontWeight: '700',
+    },
+  });
+}

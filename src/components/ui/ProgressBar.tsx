@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { colors } from '../../theme/colors';
+import { Palette } from '../../theme/colors';
 import { radius } from '../../theme/radius';
+import { useTheme } from '../../theme/ThemeContext';
 
 interface ProgressBarProps {
   /** 0~1；超过 1 视觉封顶 100%（US2.10），数值显示由调用方负责。 */
@@ -11,6 +12,8 @@ interface ProgressBarProps {
 
 /** 进度条：超过目标时视觉封顶 100%。 */
 export function ProgressBar({ progress, accessibilityLabel }: ProgressBarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const clamped = Math.max(0, Math.min(1, Number.isFinite(progress) ? progress : 0));
   return (
     <View
@@ -25,16 +28,18 @@ export function ProgressBar({ progress, accessibilityLabel }: ProgressBarProps) 
   );
 }
 
-const styles = StyleSheet.create({
-  track: {
-    height: 10,
-    borderRadius: radius.control / 2,
-    backgroundColor: colors.progressTrack,
-    overflow: 'hidden',
-  },
-  fill: {
-    height: '100%',
-    borderRadius: radius.control / 2,
-    backgroundColor: colors.primary,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    track: {
+      height: 10,
+      borderRadius: radius.control / 2,
+      backgroundColor: colors.progressTrack,
+      overflow: 'hidden',
+    },
+    fill: {
+      height: '100%',
+      borderRadius: radius.control / 2,
+      backgroundColor: colors.primary,
+    },
+  });
+}

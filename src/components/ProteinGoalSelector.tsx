@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
+import { useTheme } from '../theme/ThemeContext';
 import { ProteinGoalLevel, ProteinGoalMode } from '../types';
 import { useT } from '../i18n/I18nContext';
 import { formatCoefficient, getGoalCoefficient } from '../domain/proteinGoal';
@@ -17,6 +18,8 @@ interface ProteinGoalModeSelectorProps {
  * 模式为一级概念、系数二级；选中 = 绿色实底 + 加粗（非纯颜色，附带 accessibilityState）。
  */
 export function ProteinGoalModeSelector({ mode, onSelectMode }: ProteinGoalModeSelectorProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t } = useT();
   return (
     <View style={styles.row} accessibilityRole="radiogroup" accessibilityLabel={t.goalModeA11y}>
@@ -59,6 +62,8 @@ export function ProteinGoalLevelSelector({
   level,
   onSelectLevel,
 }: ProteinGoalLevelSelectorProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t } = useT();
   const levels: readonly { value: ProteinGoalLevel; label: string }[] = [
     { value: 'low', label: t.levelLow },
@@ -87,55 +92,57 @@ export function ProteinGoalLevelSelector({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  chip: {
-    flex: 1,
-    minHeight: 48,
-    borderRadius: radius.control,
-    backgroundColor: colors.controlBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  chipSelected: {
-    backgroundColor: colors.primary,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  chipTextSelected: {
-    color: colors.surface,
-    fontWeight: '700',
-  },
-  levelRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: spacing.sm,
-  },
-  levelChip: {
-    flex: 1,
-    minHeight: 48,
-    borderRadius: radius.control + 4,
-    backgroundColor: colors.controlBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  levelChipSelected: {
-    backgroundColor: colors.primary,
-  },
-  levelText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  levelTextSelected: {
-    color: colors.surface,
-    fontWeight: '800',
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    chip: {
+      flex: 1,
+      minHeight: 48,
+      borderRadius: radius.control,
+      backgroundColor: colors.controlBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 4,
+    },
+    chipSelected: {
+      backgroundColor: colors.primary,
+    },
+    chipText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    chipTextSelected: {
+      color: colors.surface,
+      fontWeight: '700',
+    },
+    levelRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: spacing.sm,
+    },
+    levelChip: {
+      flex: 1,
+      minHeight: 48,
+      borderRadius: radius.control + 4,
+      backgroundColor: colors.controlBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    levelChipSelected: {
+      backgroundColor: colors.primary,
+    },
+    levelText: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    levelTextSelected: {
+      color: colors.surface,
+      fontWeight: '800',
+    },
+  });
+}

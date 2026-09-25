@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { NumberStepper } from './ui/NumberStepper';
 import { SegmentedControl } from './ui/SegmentedControl';
 import { FoodIcon } from './ui/FoodIcon';
 import { calculateFoodProtein, formatProtein } from '../domain/protein';
 import { getCanonicalStep, getDisplayQuantity, SERVING_STEP } from '../domain/units';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
+import { useTheme } from '../theme/ThemeContext';
 import { FoodDefinition, SelectedFood } from '../types';
 import { fmt, foodName, unitLabel, useT } from '../i18n/I18nContext';
 
@@ -34,6 +35,8 @@ export function FoodRow({
   onEdit,
   onRemove,
 }: FoodRowProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const serving =
     food.servingOptions.find((option) => option.id === selected.servingId) ??
     food.servingOptions[0];
@@ -146,88 +149,90 @@ export function FoodRow({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  nameCol: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  base: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 1,
-  },
-  menuButton: {
-    minHeight: 36,
-    paddingHorizontal: 8,
-    borderRadius: radius.control,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuText: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    fontWeight: '700',
-  },
-  menuRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  menuItem: {
-    minHeight: 36,
-    paddingHorizontal: 10,
-    borderRadius: radius.control,
-    backgroundColor: colors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuItemText: {
-    fontSize: 12,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  removeText: {
-    color: colors.danger,
-  },
-  controlRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing.sm,
-    gap: spacing.sm,
-    paddingLeft: 48,
-  },
-  modeSwitch: {
-    width: 104,
-  },
-  stepper: {
-    flex: 1,
-  },
-  contributionBox: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  contributionValue: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  contributionUnit: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginLeft: 2,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    row: {
+      paddingVertical: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    nameCol: {
+      flex: 1,
+    },
+    name: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    base: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 1,
+    },
+    menuButton: {
+      minHeight: 36,
+      paddingHorizontal: 8,
+      borderRadius: radius.control,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    menuText: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      fontWeight: '700',
+    },
+    menuRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    menuItem: {
+      minHeight: 36,
+      paddingHorizontal: 10,
+      borderRadius: radius.control,
+      backgroundColor: colors.primarySoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    menuItemText: {
+      fontSize: 12,
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    removeText: {
+      color: colors.danger,
+    },
+    controlRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: spacing.sm,
+      gap: spacing.sm,
+      paddingLeft: 48,
+    },
+    modeSwitch: {
+      width: 104,
+    },
+    stepper: {
+      flex: 1,
+    },
+    contributionBox: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+    },
+    contributionValue: {
+      fontSize: 17,
+      fontWeight: '800',
+      color: colors.primary,
+    },
+    contributionUnit: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginLeft: 2,
+    },
+  });
+}

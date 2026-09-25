@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../../theme/colors';
+import { Palette } from '../../theme/colors';
 import { radius } from '../../theme/radius';
+import { useTheme } from '../../theme/ThemeContext';
 
 interface SegmentedControlProps<T extends string | number> {
   options: readonly { value: T; label: string; accessibilityLabel?: string }[];
@@ -17,6 +18,8 @@ export function SegmentedControl<T extends string | number>({
   onChange,
   accessibilityLabel,
 }: SegmentedControlProps<T>) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.row} accessibilityLabel={accessibilityLabel} accessibilityRole="radiogroup">
       {options.map((option) => {
@@ -38,31 +41,33 @@ export function SegmentedControl<T extends string | number>({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.control,
-    padding: 3,
-  },
-  segment: {
-    flex: 1,
-    paddingVertical: 9,
-    borderRadius: radius.control - 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 44,
-  },
-  segmentSelected: {
-    backgroundColor: colors.surface,
-  },
-  label: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  labelSelected: {
-    color: colors.primary,
-    fontWeight: '700',
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      backgroundColor: colors.primarySoft,
+      borderRadius: radius.control,
+      padding: 3,
+    },
+    segment: {
+      flex: 1,
+      paddingVertical: 9,
+      borderRadius: radius.control - 3,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 44,
+    },
+    segmentSelected: {
+      backgroundColor: colors.surface,
+    },
+    label: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    labelSelected: {
+      color: colors.primary,
+      fontWeight: '700',
+    },
+  });
+}

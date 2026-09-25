@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { ProgressBar } from './ui/ProgressBar';
 import { formatProtein } from '../domain/protein';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { spacing } from '../theme/spacing';
+import { useTheme } from '../theme/ThemeContext';
 import { ProteinBalance } from '../types';
 import { useT } from '../i18n/I18nContext';
 import type { Dict } from '../i18n/translations';
@@ -32,6 +33,8 @@ function balanceText(balance: ProteinBalance | null, t: Dict): string {
  * 进度超过目标时视觉封顶 100%，数值仍显示真实摄入。
  */
 export function ProteinSummary({ total, target, balance }: ProteinSummaryProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t } = useT();
   const progress = target !== null && target > 0 ? total / target : 0;
   const met = balance?.type === 'met';
@@ -61,48 +64,50 @@ export function ProteinSummary({ total, target, balance }: ProteinSummaryProps) 
   );
 }
 
-const styles = StyleSheet.create({
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-  },
-  leftCol: {},
-  rightCol: {
-    alignItems: 'flex-end',
-  },
-  label: {
-    fontSize: 13,
-    color: colors.textSecondary,
-  },
-  totalRow: {},
-  total: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.textPrimary,
-  },
-  totalUnit: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  targetUnit: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  balanceLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginBottom: 2,
-  },
-  balance: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  balanceMet: {
-    color: colors.primary,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      justifyContent: 'space-between',
+      marginBottom: spacing.md,
+    },
+    leftCol: {},
+    rightCol: {
+      alignItems: 'flex-end',
+    },
+    label: {
+      fontSize: 13,
+      color: colors.textSecondary,
+    },
+    totalRow: {},
+    total: {
+      fontSize: 26,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    totalUnit: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    targetUnit: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    balanceLabel: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginBottom: 2,
+    },
+    balance: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: colors.primary,
+    },
+    balanceMet: {
+      color: colors.primary,
+    },
+  });
+}

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { colors } from '../../theme/colors';
+import { Palette } from '../../theme/colors';
 import { radius } from '../../theme/radius';
+import { useTheme } from '../../theme/ThemeContext';
 
 interface NumberStepperProps {
   value: number;
@@ -31,6 +32,8 @@ export function NumberStepper({
   maxDecimals = 1,
   variant = 'default',
 }: NumberStepperProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [text, setText] = useState(() => formatValue(value, maxDecimals));
   const large = variant === 'large';
 
@@ -101,56 +104,58 @@ function formatValue(value: number, maxDecimals: number): string {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(maxDecimals);
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  button: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.controlBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonLarge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.controlBg,
-  },
-  buttonText: {
-    fontSize: 20,
-    color: colors.textPrimary,
-    fontWeight: '700',
-    lineHeight: 24,
-  },
-  buttonTextLarge: {
-    fontSize: 24,
-    lineHeight: 28,
-  },
-  input: {
-    flex: 1,
-    minWidth: 64,
-    marginHorizontal: 6,
-    minHeight: 44,
-    borderRadius: radius.input,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-  },
-  inputLarge: {
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    fontSize: 44,
-    fontWeight: '800',
-    minHeight: 52,
-    paddingVertical: 0,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    button: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.controlBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    buttonLarge: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: colors.controlBg,
+    },
+    buttonText: {
+      fontSize: 20,
+      color: colors.textPrimary,
+      fontWeight: '700',
+      lineHeight: 24,
+    },
+    buttonTextLarge: {
+      fontSize: 24,
+      lineHeight: 28,
+    },
+    input: {
+      flex: 1,
+      minWidth: 64,
+      marginHorizontal: 6,
+      minHeight: 44,
+      borderRadius: radius.input,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.textPrimary,
+      paddingVertical: 6,
+      paddingHorizontal: 8,
+    },
+    inputLarge: {
+      borderWidth: 0,
+      backgroundColor: 'transparent',
+      fontSize: 44,
+      fontWeight: '800',
+      minHeight: 52,
+      paddingVertical: 0,
+    },
+  });
+}

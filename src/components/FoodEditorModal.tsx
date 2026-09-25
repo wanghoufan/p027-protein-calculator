@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
+import { useTheme } from '../theme/ThemeContext';
 import {
   CanonicalType,
   COUNT_UNITS,
@@ -99,6 +100,8 @@ function FoodEditorForm({
   );
   const [errors, setErrors] = useState<string[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t, locale } = useT();
 
   const mode = state.kind;
@@ -460,240 +463,242 @@ function FoodEditorForm({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.lg,
-  },
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  card: {
-    width: '100%',
-    maxHeight: '85%',
-    backgroundColor: colors.surface,
-    borderRadius: radius.sheet,
-  },
-  cardContent: {
-    padding: spacing.lg,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    flex: 1,
-  },
-  close: {
-    fontSize: 18,
-    color: colors.textSecondary,
-    minHeight: 44,
-    minWidth: 44,
-    lineHeight: 44,
-    textAlign: 'center',
-  },
-  fieldLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-    marginBottom: spacing.xs,
-  },
-  input: {
-    minHeight: 46,
-    borderRadius: radius.input,
-    borderWidth: 0,
-    backgroundColor: colors.controlBg,
-    paddingHorizontal: spacing.md,
-    fontSize: 15,
-    color: colors.textPrimary,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  option: {
-    minHeight: 40,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  optionSmall: {
-    minHeight: 40,
-    minWidth: 44,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  optionSelected: {
-    backgroundColor: colors.primarySoft,
-    borderColor: colors.primary,
-  },
-  optionText: {
-    fontSize: 13,
-    color: colors.textPrimary,
-  },
-  optionTextSelected: {
-    color: colors.primary,
-    fontWeight: '700',
-  },
-  hint: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-  },
-  servingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.xs,
-  },
-  servingOriginBadge: {
-    minWidth: 30,
-    alignItems: 'center',
-  },
-  servingOriginSystem: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: colors.textSecondary,
-  },
-  servingOriginUser: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  servingOriginOverridden: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: colors.danger,
-  },
-  servingLabelInput: {
-    flex: 2,
-  },
-  servingAmountInput: {
-    flex: 1,
-  },
-  servingUnit: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  removeServing: {
-    fontSize: 12,
-    color: colors.danger,
-    paddingHorizontal: spacing.sm,
-    minHeight: 44,
-    lineHeight: 44,
-  },
-  removeServingDisabled: {
-    fontSize: 10,
-    color: colors.textSecondary,
-    paddingHorizontal: spacing.xs,
-  },
-  addServing: {
-    marginTop: spacing.sm,
-    fontSize: 13,
-    color: colors.primary,
-    fontWeight: '600',
-    minHeight: 44,
-    lineHeight: 44,
-  },
-  estimateHint: {
-    marginTop: spacing.lg,
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  errorBox: {
-    marginTop: spacing.md,
-    borderRadius: radius.control,
-    backgroundColor: colors.dangerSoft,
-    padding: spacing.md,
-  },
-  errorText: {
-    fontSize: 13,
-    color: colors.danger,
-  },
-  saveButton: {
-    marginTop: spacing.lg,
-    minHeight: 52,
-    borderRadius: radius.control + 4,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveButtonText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.surface,
-  },
-  resetButton: {
-    marginTop: spacing.sm,
-    minHeight: 44,
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  resetButtonText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  deleteConfirmBox: {
-    marginTop: spacing.sm,
-    borderRadius: radius.control,
-    backgroundColor: colors.dangerSoft,
-    padding: spacing.md,
-  },
-  deleteConfirmText: {
-    fontSize: 13,
-    color: colors.danger,
-  },
-  deleteConfirmRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  cancelDeleteButton: {
-    flex: 1,
-    minHeight: 44,
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-  },
-  deleteButton: {
-    flex: 1,
-    minHeight: 44,
-    borderRadius: radius.control,
-    backgroundColor: colors.danger,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: spacing.sm,
-  },
-  deleteButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.surface,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: colors.overlay,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: spacing.lg,
+    },
+    backdrop: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
+    card: {
+      width: '100%',
+      maxHeight: '85%',
+      backgroundColor: colors.surface,
+      borderRadius: radius.sheet,
+    },
+    cardContent: {
+      padding: spacing.lg,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: spacing.md,
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: '800',
+      color: colors.textPrimary,
+      flex: 1,
+    },
+    close: {
+      fontSize: 18,
+      color: colors.textSecondary,
+      minHeight: 44,
+      minWidth: 44,
+      lineHeight: 44,
+      textAlign: 'center',
+    },
+    fieldLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      marginTop: spacing.md,
+      marginBottom: spacing.xs,
+    },
+    input: {
+      minHeight: 46,
+      borderRadius: radius.input,
+      borderWidth: 0,
+      backgroundColor: colors.controlBg,
+      paddingHorizontal: spacing.md,
+      fontSize: 15,
+      color: colors.textPrimary,
+    },
+    optionRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    option: {
+      minHeight: 40,
+      paddingHorizontal: spacing.md,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    optionSmall: {
+      minHeight: 40,
+      minWidth: 44,
+      paddingHorizontal: spacing.sm,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    optionSelected: {
+      backgroundColor: colors.primarySoft,
+      borderColor: colors.primary,
+    },
+    optionText: {
+      fontSize: 13,
+      color: colors.textPrimary,
+    },
+    optionTextSelected: {
+      color: colors.primary,
+      fontWeight: '700',
+    },
+    hint: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: spacing.sm,
+    },
+    servingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginTop: spacing.xs,
+    },
+    servingOriginBadge: {
+      minWidth: 30,
+      alignItems: 'center',
+    },
+    servingOriginSystem: {
+      fontSize: 10,
+      fontWeight: '700',
+      color: colors.textSecondary,
+    },
+    servingOriginUser: {
+      fontSize: 10,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+    servingOriginOverridden: {
+      fontSize: 10,
+      fontWeight: '700',
+      color: colors.danger,
+    },
+    servingLabelInput: {
+      flex: 2,
+    },
+    servingAmountInput: {
+      flex: 1,
+    },
+    servingUnit: {
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    removeServing: {
+      fontSize: 12,
+      color: colors.danger,
+      paddingHorizontal: spacing.sm,
+      minHeight: 44,
+      lineHeight: 44,
+    },
+    removeServingDisabled: {
+      fontSize: 10,
+      color: colors.textSecondary,
+      paddingHorizontal: spacing.xs,
+    },
+    addServing: {
+      marginTop: spacing.sm,
+      fontSize: 13,
+      color: colors.primary,
+      fontWeight: '600',
+      minHeight: 44,
+      lineHeight: 44,
+    },
+    estimateHint: {
+      marginTop: spacing.lg,
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    errorBox: {
+      marginTop: spacing.md,
+      borderRadius: radius.control,
+      backgroundColor: colors.dangerSoft,
+      padding: spacing.md,
+    },
+    errorText: {
+      fontSize: 13,
+      color: colors.danger,
+    },
+    saveButton: {
+      marginTop: spacing.lg,
+      minHeight: 52,
+      borderRadius: radius.control + 4,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    saveButtonText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.surface,
+    },
+    resetButton: {
+      marginTop: spacing.sm,
+      minHeight: 44,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    resetButtonText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+    deleteConfirmBox: {
+      marginTop: spacing.sm,
+      borderRadius: radius.control,
+      backgroundColor: colors.dangerSoft,
+      padding: spacing.md,
+    },
+    deleteConfirmText: {
+      fontSize: 13,
+      color: colors.danger,
+    },
+    deleteConfirmRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    cancelDeleteButton: {
+      flex: 1,
+      minHeight: 44,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surface,
+    },
+    deleteButton: {
+      flex: 1,
+      minHeight: 44,
+      borderRadius: radius.control,
+      backgroundColor: colors.danger,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: spacing.sm,
+    },
+    deleteButtonText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.surface,
+    },
+  });
+}

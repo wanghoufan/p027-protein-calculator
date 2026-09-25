@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { radius } from '../theme/radius';
-import { shadows } from '../theme/shadows';
 import { spacing } from '../theme/spacing';
+import { useTheme } from '../theme/ThemeContext';
 import { useT } from '../i18n/I18nContext';
 
 interface MigrationNoticeCardProps {
@@ -22,6 +22,8 @@ export function MigrationNoticeCard({
   onAcknowledge,
   onOpenGoalPicker,
 }: MigrationNoticeCardProps) {
+  const { colors, shadows } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t } = useT();
   if (!visible) {
     return null;
@@ -52,54 +54,56 @@ export function MigrationNoticeCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: radius.card,
-    backgroundColor: '#FBF3DF',
-    padding: spacing.lg,
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#8A6D1F',
-  },
-  body: {
-    marginTop: spacing.xs,
-    fontSize: 13,
-    lineHeight: 19,
-    color: '#8A6D1F',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.md,
-  },
-  primaryButton: {
-    flex: 1,
-    minHeight: 48,
-    borderRadius: radius.control,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.surface,
-  },
-  secondaryButton: {
-    flex: 1,
-    minHeight: 48,
-    borderRadius: radius.control,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  secondaryButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    card: {
+      borderRadius: radius.card,
+      backgroundColor: colors.warningBg,
+      padding: spacing.lg,
+    },
+    title: {
+      fontSize: 14,
+      fontWeight: '800',
+      color: colors.warningText,
+    },
+    body: {
+      marginTop: spacing.xs,
+      fontSize: 13,
+      lineHeight: 19,
+      color: colors.warningText,
+    },
+    buttonRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginTop: spacing.md,
+    },
+    primaryButton: {
+      flex: 1,
+      minHeight: 48,
+      borderRadius: radius.control,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    primaryButtonText: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: colors.surface,
+    },
+    secondaryButton: {
+      flex: 1,
+      minHeight: 48,
+      borderRadius: radius.control,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    secondaryButtonText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+  });
+}

@@ -5,9 +5,10 @@ import { ProteinRankingCategoryChips } from './ProteinRankingCategoryChips';
 import { ProteinRankingRow } from './ProteinRankingRow';
 import { RankingSourceInfo } from './RankingSourceInfo';
 import { filterProteinRanking } from '../domain/ranking';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { spacing } from '../theme/spacing';
-import { typography } from '../theme/typography';
+import { Typography } from '../theme/typography';
+import { useTheme } from '../theme/ThemeContext';
 import { ProteinRankingFilter } from '../types';
 import type { Calculator } from '../hooks/useProteinCalculator';
 import { useT } from '../i18n/I18nContext';
@@ -38,7 +39,11 @@ export function ProteinRankingModal({ visible, onClose, calculator }: ProteinRan
 
 function RankingContent({ onClose, calculator }: Omit<ProteinRankingModalProps, 'visible'>) {
   const [filter, setFilter] = useState<ProteinRankingFilter>('all');
+  const { colors, typography } = useTheme();
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const { t } = useT();
+
+  const Separator = () => <View style={styles.separator} />;
 
   const rows = useMemo(() => filterProteinRanking(filter), [filter]);
   const addedIds = useMemo(
@@ -85,54 +90,52 @@ function RankingContent({ onClose, calculator }: Omit<ProteinRankingModalProps, 
   );
 }
 
-function Separator() {
-  return <View style={styles.separator} />;
+function createStyles(colors: Palette, typography: Typography) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      gap: spacing.sm,
+    },
+    back: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    backIcon: {
+      fontSize: 20,
+      color: colors.textPrimary,
+    },
+    headerTextCol: {
+      flex: 1,
+    },
+    title: {
+      ...typography.headerTitle,
+      fontSize: 18,
+    },
+    subtitle: {
+      ...typography.tagline,
+      marginTop: 1,
+    },
+    chipsWrap: {
+      paddingHorizontal: spacing.lg,
+      marginTop: spacing.sm,
+    },
+    listContent: {
+      padding: spacing.lg,
+      paddingBottom: spacing.xxl,
+    },
+    separator: {
+      height: spacing.xs,
+    },
+  });
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    gap: spacing.sm,
-  },
-  back: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backIcon: {
-    fontSize: 20,
-    color: colors.textPrimary,
-  },
-  headerTextCol: {
-    flex: 1,
-  },
-  title: {
-    ...typography.headerTitle,
-    fontSize: 18,
-  },
-  subtitle: {
-    ...typography.tagline,
-    marginTop: 1,
-  },
-  chipsWrap: {
-    paddingHorizontal: spacing.lg,
-    marginTop: spacing.sm,
-  },
-  listContent: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl,
-  },
-  separator: {
-    height: spacing.xs,
-  },
-});

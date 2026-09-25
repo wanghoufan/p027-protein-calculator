@@ -13,10 +13,10 @@ import {
 import { RecentFoodStrip } from './RecentFoodStrip';
 import { FoodCategorySection } from './FoodCategorySection';
 import { FoodIcon } from './ui/FoodIcon';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { radius } from '../theme/radius';
-import { shadows } from '../theme/shadows';
 import { spacing } from '../theme/spacing';
+import { useTheme } from '../theme/ThemeContext';
 import { FoodDefinition, PRESET_CATEGORIES } from '../types';
 import type { Calculator } from '../hooks/useProteinCalculator';
 import { fmt, foodName, unitLabel, useT } from '../i18n/I18nContext';
@@ -42,6 +42,8 @@ export function FoodPickerSheet({
   onRequestEditFood,
 }: FoodPickerSheetProps) {
   const [query, setQuery] = useState('');
+  const { colors, shadows } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t, locale } = useT();
   const translateY = useMemo(() => new Animated.Value(0), []);
 
@@ -224,182 +226,184 @@ export function FoodPickerSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  sheet: {
-    maxHeight: '80%',
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radius.sheet,
-    borderTopRightRadius: radius.sheet,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-  },
-  handleArea: {
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-  handle: {
-    width: 44,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: colors.border,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  title: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  close: {
-    fontSize: 20,
-    color: colors.textSecondary,
-    minHeight: 44,
-    minWidth: 44,
-    textAlign: 'center',
-    textAlignVertical: 'center',
-    lineHeight: 44,
-  },
-  searchWrap: {
-    marginTop: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 46,
-    borderRadius: radius.input,
-    backgroundColor: colors.controlBg,
-    paddingHorizontal: spacing.md,
-  },
-  searchIcon: {
-    fontSize: 18,
-    color: colors.textSecondary,
-    marginRight: spacing.sm,
-  },
-  search: {
-    flex: 1,
-    minHeight: 46,
-    fontSize: 15,
-    color: colors.textPrimary,
-  },
-  scroll: {
-    marginTop: spacing.sm,
-  },
-  scrollContent: {
-    paddingBottom: spacing.lg,
-  },
-  sectionTitle: {
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  foodRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    minHeight: 56,
-  },
-  foodNameCol: {
-    flex: 1,
-  },
-  foodName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  foodBase: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 1,
-  },
-  action: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionSelected: {
-    backgroundColor: colors.primarySoft,
-  },
-  actionText: {
-    fontSize: 18,
-    lineHeight: 20,
-    fontWeight: '700',
-    color: colors.surface,
-  },
-  actionTextSelected: {
-    color: colors.primary,
-  },
-  empty: {
-    marginTop: spacing.xl,
-    textAlign: 'center',
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
-  section: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  customSection: {
-    marginTop: spacing.lg,
-    borderBottomWidth: 0,
-  },
-  customEmpty: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  createCustom: {
-    marginTop: spacing.md,
-    minHeight: 64,
-    borderRadius: radius.control,
-    backgroundColor: colors.primarySoft,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    gap: spacing.md,
-  },
-  createCustomPlus: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  createCustomPlusText: {
-    fontSize: 18,
-    lineHeight: 20,
-    fontWeight: '700',
-    color: colors.surface,
-  },
-  createCustomTextCol: {
-    flex: 1,
-  },
-  createCustomText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  createCustomHint: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 1,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: colors.overlay,
+      justifyContent: 'flex-end',
+    },
+    backdrop: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
+    sheet: {
+      maxHeight: '80%',
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: radius.sheet,
+      borderTopRightRadius: radius.sheet,
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xl,
+    },
+    handleArea: {
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+    },
+    handle: {
+      width: 44,
+      height: 5,
+      borderRadius: 3,
+      backgroundColor: colors.border,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    title: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    close: {
+      fontSize: 20,
+      color: colors.textSecondary,
+      minHeight: 44,
+      minWidth: 44,
+      textAlign: 'center',
+      textAlignVertical: 'center',
+      lineHeight: 44,
+    },
+    searchWrap: {
+      marginTop: spacing.md,
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: 46,
+      borderRadius: radius.input,
+      backgroundColor: colors.controlBg,
+      paddingHorizontal: spacing.md,
+    },
+    searchIcon: {
+      fontSize: 18,
+      color: colors.textSecondary,
+      marginRight: spacing.sm,
+    },
+    search: {
+      flex: 1,
+      minHeight: 46,
+      fontSize: 15,
+      color: colors.textPrimary,
+    },
+    scroll: {
+      marginTop: spacing.sm,
+    },
+    scrollContent: {
+      paddingBottom: spacing.lg,
+    },
+    sectionTitle: {
+      marginTop: spacing.md,
+      marginBottom: spacing.sm,
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    foodRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      minHeight: 56,
+    },
+    foodNameCol: {
+      flex: 1,
+    },
+    foodName: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.textPrimary,
+    },
+    foodBase: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 1,
+    },
+    action: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    actionSelected: {
+      backgroundColor: colors.primarySoft,
+    },
+    actionText: {
+      fontSize: 18,
+      lineHeight: 20,
+      fontWeight: '700',
+      color: colors.surface,
+    },
+    actionTextSelected: {
+      color: colors.primary,
+    },
+    empty: {
+      marginTop: spacing.xl,
+      textAlign: 'center',
+      color: colors.textSecondary,
+      fontSize: 14,
+    },
+    section: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    customSection: {
+      marginTop: spacing.lg,
+      borderBottomWidth: 0,
+    },
+    customEmpty: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      marginBottom: spacing.sm,
+    },
+    createCustom: {
+      marginTop: spacing.md,
+      minHeight: 64,
+      borderRadius: radius.control,
+      backgroundColor: colors.primarySoft,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.md,
+      gap: spacing.md,
+    },
+    createCustomPlus: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    createCustomPlusText: {
+      fontSize: 18,
+      lineHeight: 20,
+      fontWeight: '700',
+      color: colors.surface,
+    },
+    createCustomTextCol: {
+      flex: 1,
+    },
+    createCustomText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+    createCustomHint: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 1,
+    },
+  });
+}

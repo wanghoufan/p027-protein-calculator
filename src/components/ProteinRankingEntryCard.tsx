@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { radius } from '../theme/radius';
-import { shadows } from '../theme/shadows';
+import { useTheme } from '../theme/ThemeContext';
 import { spacing } from '../theme/spacing';
 import { useT } from '../i18n/I18nContext';
 
@@ -15,6 +15,8 @@ interface ProteinRankingEntryCardProps {
  * 位于主计算汇总之后、品牌装饰之前；整卡可点击，触控区域≥44dp，方案 B 视觉。
  */
 export function ProteinRankingEntryCard({ onPress }: ProteinRankingEntryCardProps) {
+  const { colors, shadows } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t } = useT();
   return (
     <Pressable
@@ -35,46 +37,48 @@ export function ProteinRankingEntryCard({ onPress }: ProteinRankingEntryCardProp
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
-    padding: spacing.lg,
-    gap: spacing.md,
-    minHeight: 76,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  trophy: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  trophyIcon: {
-    fontSize: 22,
-  },
-  textCol: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  link: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: radius.card,
+      padding: spacing.lg,
+      gap: spacing.md,
+      minHeight: 76,
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    trophy: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: colors.primarySoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    trophyIcon: {
+      fontSize: 22,
+    },
+    textCol: {
+      flex: 1,
+    },
+    title: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    subtitle: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    link: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+  });
+}

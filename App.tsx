@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { preventAutoHideAsync, hideAsync } from 'expo-splash-screen';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useProteinCalculator } from './src/hooks/useProteinCalculator';
@@ -23,9 +23,9 @@ import { ProteinRankingEntryCard } from './src/components/ProteinRankingEntryCar
 import { ProteinRankingModal } from './src/components/ProteinRankingModal';
 import { Card } from './src/components/ui/Card';
 import { calculateProteinBalance } from './src/domain/protein';
-import { colors } from './src/theme/colors';
+import { Palette } from './src/theme/colors';
 import { spacing } from './src/theme/spacing';
-import { typography } from './src/theme/typography';
+import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { FoodDefinition, PresetFoodOverride, ProteinGoalMode } from './src/types';
 import { I18nProvider, useT } from './src/i18n/I18nContext';
 
@@ -33,6 +33,8 @@ import { I18nProvider, useT } from './src/i18n/I18nContext';
 void preventAutoHideAsync().catch(() => undefined);
 
 function CalculatorHome() {
+  const { colors, typography } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t } = useT();
   const calculator = useProteinCalculator();
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -290,107 +292,116 @@ function CalculatorHome() {
   );
 }
 
+function ThemedStatusBar() {
+  const { isDark } = useTheme();
+  return <StatusBar style={isDark ? 'light' : 'dark'} />;
+}
+
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <I18nProvider>
-        <StatusBar style="dark" />
-        <CalculatorHome />
-      </I18nProvider>
-    </SafeAreaProvider>
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <I18nProvider>
+          <ThemedStatusBar />
+          <CalculatorHome />
+        </I18nProvider>
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: 46,
-    height: 46,
-    borderRadius: 12,
-  },
-  headerText: {
-    flex: 1,
-    marginLeft: spacing.md,
-  },
-  gearButton: {
-    minHeight: 48,
-    minWidth: 48,
-    borderRadius: 24,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gearIcon: {
-    fontSize: 20,
-    color: colors.textSecondary,
-  },
-  section: {
-    marginTop: spacing.md,
-  },
-  goalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  howToChoose: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.primary,
-    minHeight: 48,
-    lineHeight: 48,
-  },
-  modeSelector: {
-    marginTop: spacing.sm,
-  },
-  detailLink: {
-    marginTop: spacing.sm,
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.primary,
-    minHeight: 32,
-  },
-  foodHeader: {
-    marginTop: spacing.xl,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  foodHeaderActions: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-  },
-  clearText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.primary,
-    minHeight: 48,
-    lineHeight: 48,
-  },
-  foodList: {
-    marginTop: spacing.xs,
-  },
-  addButton: {
-    marginTop: spacing.md,
-    minHeight: 50,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButtonText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.surface,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: spacing.lg,
+      paddingBottom: spacing.xxl,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    logo: {
+      width: 46,
+      height: 46,
+      borderRadius: 12,
+    },
+    headerText: {
+      flex: 1,
+      marginLeft: spacing.md,
+    },
+    gearButton: {
+      minHeight: 48,
+      minWidth: 48,
+      borderRadius: 24,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    gearIcon: {
+      fontSize: 20,
+      color: colors.textSecondary,
+    },
+    section: {
+      marginTop: spacing.md,
+    },
+    goalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    howToChoose: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: colors.primary,
+      minHeight: 48,
+      lineHeight: 48,
+    },
+    modeSelector: {
+      marginTop: spacing.sm,
+    },
+    detailLink: {
+      marginTop: spacing.sm,
+      fontSize: 12,
+      fontWeight: '600',
+      color: colors.primary,
+      minHeight: 32,
+    },
+    foodHeader: {
+      marginTop: spacing.xl,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    foodHeaderActions: {
+      flexDirection: 'row',
+      gap: spacing.lg,
+    },
+    clearText: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: colors.primary,
+      minHeight: 48,
+      lineHeight: 48,
+    },
+    foodList: {
+      marginTop: spacing.xs,
+    },
+    addButton: {
+      marginTop: spacing.md,
+      minHeight: 50,
+      borderRadius: 16,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addButtonText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.surface,
+    },
+  });
+}

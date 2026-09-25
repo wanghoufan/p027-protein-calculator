@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
+import { useTheme } from '../theme/ThemeContext';
 import { useT } from '../i18n/I18nContext';
 
 /**
@@ -11,6 +12,8 @@ import { useT } from '../i18n/I18nContext';
  * 完全离线展示：100g 口径提示、来源、核验日期、范围声明、差异说明。
  */
 export function RankingSourceInfo() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t } = useT();
   return (
     <View style={styles.wrap}>
@@ -33,42 +36,44 @@ export function RankingSourceInfo() {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    marginTop: spacing.md,
-    gap: spacing.md,
-  },
-  eggTip: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: colors.targetCard,
-    borderRadius: radius.control,
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  eggTipIcon: {
-    fontSize: 14,
-  },
-  eggTipText: {
-    flex: 1,
-    fontSize: 13,
-    lineHeight: 19,
-    color: colors.textPrimary,
-  },
-  sourceCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
-  sourceTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  sourceBody: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: colors.textSecondary,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    wrap: {
+      marginTop: spacing.md,
+      gap: spacing.md,
+    },
+    eggTip: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      backgroundColor: colors.targetCard,
+      borderRadius: radius.control,
+      padding: spacing.md,
+      gap: spacing.sm,
+    },
+    eggTipIcon: {
+      fontSize: 14,
+    },
+    eggTipText: {
+      flex: 1,
+      fontSize: 13,
+      lineHeight: 19,
+      color: colors.textPrimary,
+    },
+    sourceCard: {
+      backgroundColor: colors.surface,
+      borderRadius: radius.card,
+      padding: spacing.lg,
+      gap: spacing.sm,
+    },
+    sourceTitle: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    sourceBody: {
+      fontSize: 12,
+      lineHeight: 18,
+      color: colors.textSecondary,
+    },
+  });
+}

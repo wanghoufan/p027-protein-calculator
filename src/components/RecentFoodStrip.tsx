@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { FoodIcon } from './ui/FoodIcon';
 import { FoodDefinition, MAX_RECENT_FOODS } from '../types';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { radius } from '../theme/radius';
 import { spacing } from '../theme/spacing';
+import { useTheme } from '../theme/ThemeContext';
 import { fmt, foodName, useT } from '../i18n/I18nContext';
 
 interface RecentFoodStripProps {
@@ -18,6 +19,8 @@ interface RecentFoodStripProps {
  * 视觉向原型靠拢：四宫格缩略图卡 + 右下角 + 徽标。
  */
 export function RecentFoodStrip({ foods, selectedIds, onToggle }: RecentFoodStripProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t, locale } = useT();
   if (foods.length === 0) {
     return null;
@@ -54,53 +57,55 @@ export function RecentFoodStrip({ foods, selectedIds, onToggle }: RecentFoodStri
   );
 }
 
-const styles = StyleSheet.create({
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  cell: {
-    flexGrow: 1,
-    flexBasis: '23%',
-    minWidth: 72,
-    borderRadius: radius.control,
-    backgroundColor: colors.controlBg,
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xs,
-  },
-  cellSelected: {
-    backgroundColor: colors.primarySoft,
-  },
-  cellText: {
-    marginTop: spacing.sm,
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  cellStatePrefix: {
-    color: 'transparent',
-    fontSize: 8,
-  },
-  badge: {
-    position: 'absolute',
-    right: 4,
-    top: 4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeSelected: {
-    backgroundColor: colors.primary,
-  },
-  badgeText: {
-    fontSize: 12,
-    lineHeight: 14,
-    color: colors.surface,
-    fontWeight: '700',
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    grid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    cell: {
+      flexGrow: 1,
+      flexBasis: '23%',
+      minWidth: 72,
+      borderRadius: radius.control,
+      backgroundColor: colors.controlBg,
+      alignItems: 'center',
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.xs,
+    },
+    cellSelected: {
+      backgroundColor: colors.primarySoft,
+    },
+    cellText: {
+      marginTop: spacing.sm,
+      fontSize: 12,
+      fontWeight: '600',
+      color: colors.textPrimary,
+    },
+    cellStatePrefix: {
+      color: 'transparent',
+      fontSize: 8,
+    },
+    badge: {
+      position: 'absolute',
+      right: 4,
+      top: 4,
+      width: 18,
+      height: 18,
+      borderRadius: 9,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    badgeSelected: {
+      backgroundColor: colors.primary,
+    },
+    badgeText: {
+      fontSize: 12,
+      lineHeight: 14,
+      color: colors.surface,
+      fontWeight: '700',
+    },
+  });
+}

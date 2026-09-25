@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { radius } from '../theme/radius';
-import { shadows } from '../theme/shadows';
 import { spacing } from '../theme/spacing';
-import { typography } from '../theme/typography';
+import { useTheme } from '../theme/ThemeContext';
 import { ProteinGoalSelection } from '../types';
 import { formatCoefficient, getGoalCoefficient } from '../domain/proteinGoal';
 import { formatProtein } from '../domain/protein';
@@ -25,6 +24,8 @@ export function ProteinGoalSummaryCard({
   proteinGoal,
   targetProtein,
 }: ProteinGoalSummaryCardProps) {
+  const { colors, shadows, typography } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t, locale } = useT();
   const valid = targetProtein !== null && weightKg !== null;
   const copy = t.goalModes[proteinGoal.mode];
@@ -53,36 +54,38 @@ export function ProteinGoalSummaryCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.targetCard,
-    borderRadius: radius.card,
-    padding: spacing.lg,
-  },
-  caption: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  numberRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginTop: 2,
-  },
-  unit: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginLeft: spacing.sm,
-  },
-  note: {
-    marginTop: spacing.xs,
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  placeholder: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: colors.textSecondary,
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: colors.targetCard,
+      borderRadius: radius.card,
+      padding: spacing.lg,
+    },
+    caption: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+    numberRow: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      marginTop: 2,
+    },
+    unit: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginLeft: spacing.sm,
+    },
+    note: {
+      marginTop: spacing.xs,
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    placeholder: {
+      fontSize: 40,
+      fontWeight: '800',
+      color: colors.textSecondary,
+    },
+  });
+}

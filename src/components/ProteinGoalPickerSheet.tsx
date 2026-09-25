@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../theme/colors';
+import { Palette } from '../theme/colors';
 import { radius } from '../theme/radius';
-import { shadows } from '../theme/shadows';
 import { spacing } from '../theme/spacing';
+import { useTheme } from '../theme/ThemeContext';
 import { ProteinGoalLevel, ProteinGoalMode, ProteinGoalSelection } from '../types';
 import { fmt, useT } from '../i18n/I18nContext';
 import { getGoalCoefficient } from '../domain/proteinGoal';
@@ -28,6 +28,8 @@ export function ProteinGoalPickerSheet({
   onSelect,
 }: ProteinGoalPickerSheetProps) {
   const insets = useSafeAreaInsets();
+  const { colors, shadows } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { t } = useT();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -99,119 +101,121 @@ export function ProteinGoalPickerSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  sheet: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radius.sheet,
-    borderTopRightRadius: radius.sheet,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    maxHeight: '80%',
-  },
-  handleArea: {
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-  handle: {
-    width: 44,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: colors.border,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.textPrimary,
-  },
-  close: {
-    fontSize: 20,
-    color: colors.textSecondary,
-    minHeight: 48,
-    minWidth: 48,
-    textAlign: 'center',
-    lineHeight: 48,
-  },
-  list: {
-    marginTop: spacing.md,
-  },
-  modeCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: radius.card,
-    borderWidth: 2,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    minHeight: 76,
-  },
-  modeCardSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primarySoft,
-  },
-  modeTextCol: {
-    flex: 1,
-  },
-  modeTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-  },
-  modeName: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.textPrimary,
-  },
-  modeRange: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  modeTagline: {
-    marginTop: 2,
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  checkBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    marginLeft: spacing.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkOn: {
-    backgroundColor: colors.primary,
-  },
-  checkOff: {
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  checkText: {
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  checkTextOn: {
-    color: colors.surface,
-  },
-  checkTextOff: {
-    color: 'transparent',
-  },
-});
+function createStyles(colors: Palette) {
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: colors.overlay,
+      justifyContent: 'flex-end',
+    },
+    backdrop: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
+    sheet: {
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: radius.sheet,
+      borderTopRightRadius: radius.sheet,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      maxHeight: '80%',
+    },
+    handleArea: {
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+    },
+    handle: {
+      width: 44,
+      height: 5,
+      borderRadius: 3,
+      backgroundColor: colors.border,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    close: {
+      fontSize: 20,
+      color: colors.textSecondary,
+      minHeight: 48,
+      minWidth: 48,
+      textAlign: 'center',
+      lineHeight: 48,
+    },
+    list: {
+      marginTop: spacing.md,
+    },
+    modeCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: radius.card,
+      borderWidth: 2,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      padding: spacing.lg,
+      marginBottom: spacing.md,
+      minHeight: 76,
+    },
+    modeCardSelected: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primarySoft,
+    },
+    modeTextCol: {
+      flex: 1,
+    },
+    modeTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      justifyContent: 'space-between',
+    },
+    modeName: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    modeRange: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+    modeTagline: {
+      marginTop: 2,
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    checkBadge: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      marginLeft: spacing.sm,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checkOn: {
+      backgroundColor: colors.primary,
+    },
+    checkOff: {
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    checkText: {
+      fontSize: 14,
+      fontWeight: '800',
+    },
+    checkTextOn: {
+      color: colors.surface,
+    },
+    checkTextOff: {
+      color: 'transparent',
+    },
+  });
+}
