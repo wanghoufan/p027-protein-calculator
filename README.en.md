@@ -4,7 +4,7 @@
 
 [中文](./README.md)
 
-![Home](docs/screenshots/home.png) ![Dark home](docs/screenshots/dark-home.png) ![High-protein ranking](docs/screenshots/ranking.png)
+<img src="docs/screenshots/home.png" alt="Home" width="200"> <img src="docs/screenshots/dark-home.png" alt="Dark home" width="200"> <img src="docs/screenshots/ranking.png" alt="High-protein ranking" width="200">
 
 ## What is this
 

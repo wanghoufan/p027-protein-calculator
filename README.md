@@ -4,7 +4,7 @@
 
 [English](./README.en.md)
 
-![首页](docs/screenshots/home.png) ![深色首页](docs/screenshots/dark-home.png) ![高蛋白食物榜](docs/screenshots/ranking.png)
+<img src="docs/screenshots/home.png" alt="首页" width="200"> <img src="docs/screenshots/dark-home.png" alt="深色首页" width="200"> <img src="docs/screenshots/ranking.png" alt="高蛋白食物榜" width="200">
 
 ## 这是什么
 
